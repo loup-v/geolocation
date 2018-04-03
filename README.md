@@ -4,13 +4,14 @@ Flutter geolocation plugin working on Android API 16+ and iOS 9+.
 
 Features:
 
-* Managing permissions automatically
-* Retrieving last known location
-* Requesting single location update
+* Automatically request location permission
+* Retrieve current device location
+* Listen to location changes
+* Common API with different logic under the hood for iOS and Android, in order to follow best practices on both platforms 
 
 The plugin is under active development and the following features are planned soon:
 
-* Continuous location updates with foreground and background strategies
+* Foreground and background strategies for location changes
 * Geocode
 * Geofences
 * Place suggestions
@@ -37,8 +38,9 @@ See [#16049](https://github.com/flutter/flutter/issues/16049) for help on integr
 
 ## Permission
 
-Apps need to declare the desired location permission in configuration file and request it at runtime.
-Geolocation plugin automatically checks at runtime if the configuration is correct, and throws an exception otherwise. 
+Apps need to declare the location usage in configuration file and request it at runtime.
+Geolocation plugin automatically checks at runtime if the configuration is correct.
+In case you forget, the plugin will throw a shiny exception to get you notified ASAP. 
 
 ### iOS configuration
 
@@ -50,17 +52,17 @@ You need to specify the description for the desired permission in `Infos.plist`.
 
 **When targeting iOS 11+**: `NSLocationAlwaysAndWhenInUseUsageDescription` or `NSLocationWhenInUseUsageDescription`
 
-Geolocation will automatically request the associated permission at runtime, based on the content of `Infos.plist`.
+Geolocation automatically requests the associated permission at runtime, based on the content of `Infos.plist`.
 
 ### Android configuration
 
 There are two kinds of location permission in Android: "coarse" and "fine".
 Coarse location will allow to get approximate location based on sensors like the Wifi, while fine location returns the most accurate location using GPS (in addition to coarse).
 
-You need to declare one of those permissions in `AndroidManifest.xml`:
+You need to declare one of the two permissions in `AndroidManifest.xml`:
+
 ```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="some.app">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <!-- or -->
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -73,7 +75,36 @@ Note that `ACCESS_FINE_LOCATION` permission includes `ACCESS_COARSE_LOCATION`.
 
 On Android (api 23+) and iOS, apps need to request permission at runtime.
 Geolocation plugin handles this automatically. 
-If the user denies location permission, location result will return an error of type `GeolocationResultErrorType.permissionDenied`. 
+If the user denies location permission, location result will return an error of type `GeolocationResultErrorType.permissionDenied`.
+
+Alternatively you can also manually check and request location permission.
+This might be useful if you want to ask the location permission beforehand, during an onboarding flow for instance.
+
+### Check if location service is operational
+
+```dart
+final GeolocationResult result = await Geolocation.isLocationOperational;
+if(result.isSuccessful) {
+  // location service is enabled, and location permission is granted
+} else {
+  // location service is not enabled, restricted, or location permission is denied
+}
+``` 
+
+### Request location permission
+
+_Note: You are not required to request permission manually. 
+Geolocation plugin will request permission automatically if it's necessarily, when you make a location request._   
+
+```dart
+final GeolocationResult result = await Geolocation.requestLocationPermission();
+if(result.isSuccessful) {
+  // location permission is granted (or was already granted before making the request)
+} else {
+  // location permission is not granted
+  // user might have denied, but it's also possible that location service is not enabled, restricted, and user never saw the permission request dialog 
+}
+``` 
 
 
 ## Location API
@@ -83,7 +114,10 @@ If the user denies location permission, location result will return an error of 
 See api documentation: [link]
 
 ```dart
-LocationResult result = await Geolocation.lastKnownLocation;
+final LocationResult result = await Geolocation.lastKnownLocation;
+if(result.isSuccessful) {
+  print('lat: ${result.location.latitude}');
+}
 ```
 
 
