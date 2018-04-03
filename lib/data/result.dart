@@ -3,7 +3,7 @@
 
 part of geolocation;
 
-abstract class GeolocationResult {
+class GeolocationResult {
   GeolocationResult._({
     @required this.isSuccessful,
     this.error,
@@ -50,7 +50,7 @@ class GeolocationResultError {
       : type = _mapResultErrorTypeJson(json['type']),
         message = json['message'],
         additionalInfo = GeolocationResultError._mapAdditionalInfoJson(json) {
-    if (json['fatal']) {
+    if (json.containsKey('fatal') && json['fatal']) {
       throw GeolocationException(message);
     }
   }

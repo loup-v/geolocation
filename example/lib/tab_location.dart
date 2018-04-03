@@ -1,6 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
@@ -15,7 +16,14 @@ class TabLocation extends StatefulWidget {
 }
 
 class _TabLocationState extends State<TabLocation> {
-  List<LocationData> locations = [];
+  List<LocationData> _locations = [];
+  List<StreamSubscription<dynamic>> _subscriptions = [];
+
+  @override
+  dispose() {
+    super.dispose();
+    _subscriptions.forEach((it) => it.cancel());
+  }
 
   _onLastKnownPressed() async {
     final int id = _createLocation('last known', Colors.blueGrey);
@@ -27,30 +35,40 @@ class _TabLocationState extends State<TabLocation> {
 
   _onCurrentPressed() async {
     final int id = _createLocation('current', Colors.lightGreen);
-    LocationResult result =
+    Stream<LocationResult> stream =
         await Geolocation.currentLocation(LocationAccuracy.best);
-    if (mounted) {
-      _updateLocation(id, result);
-    }
+    if (!mounted) return;
+
+    final subscription = stream.listen((result) {
+      setState(() {
+        _updateLocation(id, result);
+      });
+    });
+    _subscriptions.add(subscription);
   }
 
   _onSingleUpdatePressed() async {
     final int id = _createLocation('update', Colors.deepOrange);
-    LocationResult result =
+    Stream<LocationResult> stream =
         await Geolocation.singleLocationUpdate(LocationAccuracy.best);
-    if (mounted) {
-      _updateLocation(id, result);
-    }
+    if (!mounted) return;
+
+    final subscription = stream.listen((result) {
+      setState(() {
+        _updateLocation(id, result);
+      });
+    });
+    _subscriptions.add(subscription);
   }
 
   int _createLocation(String origin, Color color) {
-    final int lastId = locations.isNotEmpty
-        ? locations.map((location) => location.id).reduce(math.max)
+    final int lastId = _locations.isNotEmpty
+        ? _locations.map((location) => location.id).reduce(math.max)
         : 0;
     final int newId = lastId + 1;
 
     setState(() {
-      locations.insert(
+      _locations.insert(
         0,
         LocationData(
           id: newId,
@@ -67,13 +85,13 @@ class _TabLocationState extends State<TabLocation> {
   }
 
   _updateLocation(int id, LocationResult result) {
-    final int index = locations.indexWhere((location) => location.id == id);
+    final int index = _locations.indexWhere((location) => location.id == id);
     assert(index != -1);
 
-    final LocationData location = locations[index];
+    final LocationData location = _locations[index];
 
     setState(() {
-      locations[index] = LocationData(
+      _locations[index] = LocationData(
         id: location.id,
         result: result,
         origin: location.origin,
@@ -98,7 +116,7 @@ class _TabLocationState extends State<TabLocation> {
 
     children.addAll(ListTile.divideTiles(
       context: context,
-      tiles: locations.map((location) => new _Item(data: location)).toList(),
+      tiles: _locations.map((location) => new _Item(data: location)).toList(),
     ));
 
     return new Scaffold(

@@ -4,7 +4,7 @@
 part of geolocation;
 
 /// iOS specific values for [LocationAccuracy]
-/// For description of each value, see: https://developers.google.com/android/reference/com/google/android/gms/location/LocationRequest.html#PRIORITY_BALANCED_POWER_ACCURACY
+/// See: https://developer.apple.com/documentation/corelocation/cllocationaccuracy
 enum GeolocationIosAccuracy {
   threeKilometers,
   kilometer,

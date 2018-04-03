@@ -4,5 +4,5 @@
 part of geolocation;
 
 /// Android specific values for [LocationAccuracy]
-/// For description of each value, see: https://developers.google.com/android/reference/com/google/android/gms/location/LocationRequest.html#PRIORITY_BALANCED_POWER_ACCURACY
+/// See: https://developers.google.com/android/reference/com/google/android/gms/location/LocationRequest.html#PRIORITY_BALANCED_POWER_ACCURACY
 enum GeolocationAndroidPriority { low, balanced, high }
