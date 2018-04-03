@@ -26,7 +26,7 @@ class _TabSettingsState extends State<TabSettings> {
   }
 
   _isLocationOperationalPressed() async {
-    GeolocationResult result = await Geolocation.isLocationOperational;
+    final GeolocationResult result = await Geolocation.isLocationOperational;
     if (mounted) {
       setState(() {
         _locationOperationalResult = result;
@@ -35,7 +35,7 @@ class _TabSettingsState extends State<TabSettings> {
   }
 
   _requestLocationPermissionPressed() async {
-    GeolocationResult result = await Geolocation.requestLocationPermission();
+    final GeolocationResult result = await Geolocation.requestLocationPermission();
     if (mounted) {
       setState(() {
         _requestPermissionResult = result;
