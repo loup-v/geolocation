@@ -28,7 +28,7 @@ Add geolocation to your pubspec.yaml:
 
 ```yaml
 dependencies:
-  geolocation: ^0.1.0
+  geolocation: ^0.1.1
 ```
 
 **Note:** There is a known issue for integrating swift written plugin into Flutter project created with Objective-C template.
