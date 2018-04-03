@@ -1,0 +1,56 @@
+//  Copyright (c) 2018 Loup Inc.
+//  Licensed under Apache License v2.0
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'tab_location.dart';
+
+void main() => runApp(new MyApp());
+
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => new _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+
+  @override
+  Widget build(BuildContext context) {
+    return new MaterialApp(
+      home: new CupertinoTabScaffold(
+        tabBar: new CupertinoTabBar(
+          items: <BottomNavigationBarItem>[
+            new BottomNavigationBarItem(
+              title: new Text('Current'),
+              icon: new Icon(Icons.location_on),
+            ),
+            new BottomNavigationBarItem(
+              title: new Text('Track'),
+              icon: new Icon(Icons.location_searching),
+            ),
+            new BottomNavigationBarItem(
+              title: new Text('Geocode'),
+              icon: new Icon(Icons.location_city),
+            ),
+          ],
+        ),
+        tabBuilder: (BuildContext context, int index) {
+          return new CupertinoTabView(
+            builder: (BuildContext context) {
+              switch (index) {
+                case 0:
+                  return new TabLocation();
+                default:
+                  return new Container(
+                    child: new Center(
+                      child: new Text('TBD'),
+                    ),
+                  );
+              }
+            },
+          );
+        },
+      ),
+    );
+  }
+}

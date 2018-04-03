@@ -1,0 +1,17 @@
+name: geolocation
+description: Geolocation plugin for iOS and Android
+version: 0.1.0
+author: Loup Inc. <hello@intheloup.io>
+homepage: https://github.com/loup-v/geolocation
+
+environment:
+  sdk: '<2.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    androidPackage: io.intheloup.geolocation
+    pluginClass: GeolocationPlugin
