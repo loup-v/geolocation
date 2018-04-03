@@ -59,6 +59,10 @@ class _TabLocationState extends State<TabLocation> {
       });
     });
     _subscriptions.add(subscription);
+
+    subscription.onDone(() {
+      _subscriptions.remove(subscription);
+    });
   }
 
   int _createLocation(String origin, Color color) {
