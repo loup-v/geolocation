@@ -83,18 +83,27 @@ class Geolocation {
   ///
   /// On iOS, it calls CLLocationManager.location
   /// See: https://developer.apple.com/documentation/corelocation/cllocationmanager/1423687-location
+  ///
+  /// [LocationResult.isSuccessful] means a location was retrieved and [LocationResult.location] is guaranteed
+  /// to not be null.
+  /// Otherwise, [GeolocationResult.error] will contain details on what failed.
   static Future<LocationResult> get lastKnownLocation async =>
       _client.lastKnownLocation();
 
   /// Retrieves the current [Location], using different mechanics on Android and iOS that are
   /// more appropriate for this purpose.
   ///
+  /// Stream will push a single [LocationResult] downstream then complete.//
   /// To cancel ongoing location request, unsubscribe from the stream.
   ///
   /// On Android, it returns the last known location in case the location is available and still
   /// valid. Otherwise it requests a single location update with the provided [accuracy].
   ///
   /// On iOS, it requests a single location update with the provided [accuracy].
+  ///
+  /// [LocationResult.isSuccessful] means a location was retrieved and [LocationResult.location] is guaranteed
+  /// to not be null.
+  /// Otherwise, [GeolocationResult.error] will contain details on what failed.
   ///
   /// See also:
   /// * [singleLocationUpdate]
@@ -103,6 +112,9 @@ class Geolocation {
       _client.currentLocation(accuracy);
 
   /// Requests a single [Location] update with the provided [accuracy].
+  /// If you just want to get a single optimized and accurate location, it's better to use [currentLocation].
+  ///
+  /// Stream will push a single [LocationResult] downstream then complete.
   /// To cancel ongoing location request, unsubscribe from the stream.
   ///
   /// On Android, it calls FusedLocationProviderClient.requestLocationUpdates()
@@ -115,6 +127,10 @@ class Geolocation {
   /// On Android, request will timeout with an error after 60 seconds.
   /// On iOS, request might timeout with an error after some time, or might return a less
   /// accurate location than requested.
+  ///
+  /// [LocationResult.isSuccessful] means a location was retrieved and [LocationResult.location] is guaranteed
+  /// to not be null.
+  /// Otherwise, [GeolocationResult.error] will contain details on what failed.
   ///
   /// See also:
   /// * [currentLocation]
