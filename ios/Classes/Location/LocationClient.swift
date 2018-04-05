@@ -9,8 +9,9 @@ import CoreLocation
 class LocationClient : NSObject, CLLocationManagerDelegate {
   
   private let locationManager = CLLocationManager()
-  private var withLocationPermissionActions: Array<DelayedAction<Void, Void>> = []
-  private var requestLocationActions: Array<DelayedAction<CLLocation, Error>> = []
+  private var permissionCallbacks: Array<Callback<Void, Void>> = []
+  private var locationUpdatesCallback: LocationUpdatesCallback? = nil
+  private var locationUpdatesRequests: Array<LocationUpdatesRequest> = []
   
   override init() {
     super.init()
@@ -23,61 +24,135 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   func requestLocationPermission(_ callback: @escaping (Result<Bool>) -> Void) {
-    runWithLocationPermission(callback: callback) {
+    runWithLocationService(success: {
       callback(Result<Bool>.success(with: true))
-    }
+    }, failure: { result in
+      callback(result)
+    })
   }
   
   func lastKnownLocation(_ callback: @escaping (Result<Location>) -> Void) {
-    runWithLocationPermission(callback: callback) {
+    runWithLocationService(success: {
       if let location = self.locationManager.location {
         callback(Result<Location>.success(with: Location(from: location)))
       } else {
         callback(Result<Location>.failure(of: .locationNotFound))
       }
-    }
+    }, failure: callback)
   }
   
-  func locationUpdates(param: LocationUpdateParam, on callback: @escaping (Result<Location>) -> Void) {
-    runWithLocationPermission(callback: callback) {
-      let requestLocationAction = DelayedAction<CLLocation, Error>(
-        success: { location in
-          callback(Result<Location>.success(with: Location(from: location)))
-      },
-        failure: { error in
-        callback(Result<Location>.failure(of: .runtime, message: error.localizedDescription))
-      })
-      self.requestLocationActions.append(requestLocationAction)
+  func startLocationUpdates(for request: LocationUpdatesRequest) {
+    runWithLocationService(success: {
+      let isAnyRequestRunning = !self.locationUpdatesRequests.isEmpty
+      let isContinuousRequestRunning = !self.locationUpdatesRequests.filter { $0.strategy == .continuous }.isEmpty
       
-      self.locationManager.desiredAccuracy = param.accuracy.ios.clValue
+      self.locationUpdatesRequests.append(request)
       
-      if param.strategy == .continuous {
+      if isAnyRequestRunning {
+        self.updateLocationRequestsAccuracy()
+        self.locationManager.stopUpdatingLocation()
+      } else {
+        self.locationManager.desiredAccuracy = request.accuracy.ios.clValue
+      }
+      
+      if isContinuousRequestRunning || request.strategy == .continuous {
         self.locationManager.startUpdatingLocation()
       } else {
         self.locationManager.requestLocation()
       }
-    }
+    }, failure: { result in
+      self.locationUpdatesCallback!(result)
+    })
   }
+  
+  func stopLocationUpdates(for request: LocationUpdatesRequest) {
+    
+  }
+  
+  func registerForLocationUpdates(_ callback: @escaping LocationUpdatesCallback) {
+    precondition(locationUpdatesCallback == nil, "trying to register a 2nd location updates callback")
+    locationUpdatesCallback = callback
+  }
+  
+  private func updateLocationRequestsAccuracy() {
+    guard !locationUpdatesRequests.isEmpty else {
+      return
+    }
+    
+    let bestRequestedAccuracy = locationUpdatesRequests.max(by: {
+      let best = LocationHelper.betterAccuracy(between: $0.accuracy.ios.clValue, and: $1.accuracy.ios.clValue)
+      return best == $0.accuracy.ios.clValue
+    })!.accuracy.ios.clValue
+    
+    locationManager.desiredAccuracy = bestRequestedAccuracy
+  }
+  
+//  func locationUpdates(param: LocationUpdateParam, on callback: @escaping (Result<Location>) -> Void) {
+//    runWithLocationPermission(callback: callback) {
+//      let callback = UpdateLocationCallback<CLLocation, Error>(
+//        param: param,
+//        success: { location in
+//          callback(Result<Location>.success(with: Location(from: location)))
+//      },
+//        failure: { error in
+//        callback(Result<Location>.failure(of: .runtime, message: error.localizedDescription))
+//      })
+//
+//      let isAnyUpdateRunning = !self.updateLocationCallbacks.isEmpty
+//      let isContinuousUpdateRunning = !self.updateLocationCallbacks.filter { $0.param.strategy == .continuous }.isEmpty
+//
+//      self.updateLocationCallbacks.append(callback)
+//
+////      if isAnyUpdateRunning {
+////        self.locationManager.stopUpdatingLocation()
+////      }
+//
+//      if isAnyUpdateRunning {
+//        return
+//      }
+//
+//      if param.strategy == .continuous {
+//        self.locationManager.startUpdatingLocation()
+//      } else {
+//        self.locationManager.requestLocation()
+//      }
+//    }
+//  }
   
   func stopLocationUpdates() {
-    self.locationManager.stopUpdatingLocation()
+    precondition(locationUpdatesCallback != nil, "trying to unregister a non-existent location updates callback")
+    locationUpdatesCallback = nil
+    
+    locationManager.stopUpdatingLocation()
+  }
+
+  private func cleanupUpdateLocationCallbacks() {
+//    updateLocationCallbacks = updateLocationCallbacks.filter { $0.param.strategy == .continuous }
+//
+//    if !updateLocationCallbacks.isEmpty {
+//      let highestAccuracyCallback = updateLocationCallbacks.max(by: {
+//        let best = LocationHelper.betterAccuracy(between: $0.param.accuracy.ios.clValue, and: $1.param.accuracy.ios.clValue)
+//        return best == $0.param.accuracy.ios.clValue
+//      })!
+//      locationManager.desiredAccuracy = highestAccuracyCallback.param.accuracy.ios.clValue
+//    }
   }
   
-  private func runWithLocationPermission<T>(callback: @escaping (Result<T>) -> Void, _ action: @escaping () -> Void) {
+  private func runWithLocationService<T>(success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
     let status: ServiceStatus<T> = checkServiceStatus()
     
     if status.isReady {
-      action()
+      success()
     } else {
       if let permission = status.needsAuthorization {
-        let withLocationPermissionAction = DelayedAction<Void, Void>(
-          success: { _ in action() },
-          failure: { _ in callback(Result<T>.failure(of: .permissionDenied)) }
+        let callback = Callback<Void, Void>(
+          success: { _ in success() },
+          failure: { _ in failure(Result<T>.failure(of: .permissionDenied)) }
         )
-        withLocationPermissionActions.append(withLocationPermissionAction)
+        permissionCallbacks.append(callback)
         locationManager.requestAuthorization(for: permission)
       } else {
-        callback(status.failure!)
+        failure(status.failure!)
       }
     }
   }
@@ -108,38 +183,40 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   // CLLocationManagerDelegate
   
   public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-    withLocationPermissionActions.forEach { action in
+    permissionCallbacks.forEach { action in
       if status == .authorizedAlways || status == .authorizedWhenInUse {
         action.success(())
       } else {
         action.failure(())
       }
     }
-    withLocationPermissionActions.removeAll()
+    permissionCallbacks.removeAll()
   }
   
   public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-    requestLocationActions.forEach { action in
-      action.success(locations.last!)
-    }
-    requestLocationActions.removeAll()
+    locationUpdatesCallback!(Result<Location>.success(with: Location(from: locations.last!)))
+//    cleanupUpdateLocationCallbacks()
   }
   
   public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-    requestLocationActions.forEach { action in
-      action.failure(error)
-    }
-    requestLocationActions.removeAll()
+    locationUpdatesCallback!(Result<Location>.failure(of: .runtime, message: error.localizedDescription))
+//    cleanupUpdateLocationCallbacks()
   }
   
-  struct DelayedAction<T, E> {
+  struct Callback<T, E> {
     let success: (T) -> Void
     let failure: (E) -> Void
   }
+  
+  typealias LocationUpdatesCallback = (Result<Location>) -> Void
   
   struct ServiceStatus<T: Codable> {
     let isReady: Bool
     let needsAuthorization: LocationPermissionRequest?
     let failure: Result<T>?
   }
+  
+  
 }
+
+

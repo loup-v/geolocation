@@ -9,22 +9,15 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-part 'channel/client.dart';
-
 part 'channel/codec.dart';
-
+part 'channel/helper.dart';
+part 'channel/location_channel.dart';
 part 'channel/param.dart';
-
 part 'data/location.dart';
-
 part 'data/location_result.dart';
-
 part 'data/result.dart';
-
 part 'facet_android/location.dart';
-
 part 'facet_android/result.dart';
-
 part 'facet_ios/location.dart';
 
 /// Provides access to geolocation features of the underlying platform (Android or iOS).
@@ -44,7 +37,7 @@ class Geolocation {
   /// * [GeolocationResultError]
   /// * [GeolocationResultErrorType]
   static Future<GeolocationResult> get isLocationOperational async =>
-      _client.isLocationOperational();
+      _locationChannel.isLocationOperational();
 
   /// On Android, it requests location permission.
   /// On iOS, it requests "when in use" or "always" location permission.
@@ -66,7 +59,7 @@ class Geolocation {
   /// See also:
   /// * [isLocationOperational]
   static Future<GeolocationResult> requestLocationPermission() async =>
-      _client.requestLocationPermission();
+      _locationChannel.requestLocationPermission();
 
   /// Retrieves the most recent [Location] currently available.
   /// It does not wait for the device to fetch a new location, and returns immediately the
@@ -88,7 +81,7 @@ class Geolocation {
   /// to not be null.
   /// Otherwise, [GeolocationResult.error] will contain details on what failed.
   static Future<LocationResult> get lastKnownLocation async =>
-      _client.lastKnownLocation();
+      _locationChannel.lastKnownLocation();
 
   /// Retrieves the current [Location], using different mechanics on Android and iOS that are
   /// more appropriate for this purpose.
@@ -107,9 +100,9 @@ class Geolocation {
   ///
   /// See also:
   /// * [singleLocationUpdate]
-  static Future<Stream<LocationResult>> currentLocation(
-          LocationAccuracy accuracy) async =>
-      _client.currentLocation(accuracy);
+  static Stream<LocationResult> currentLocation(LocationAccuracy accuracy) =>
+      _locationChannel.locationUpdates(_LocationUpdatesRequest(
+          strategy: _LocationUpdateStrategy.current, accuracy: accuracy));
 
   /// Requests a single [Location] update with the provided [accuracy].
   /// If you just want to get a single optimized and accurate location, it's better to use [currentLocation].
@@ -134,21 +127,21 @@ class Geolocation {
   ///
   /// See also:
   /// * [currentLocation]
-  static Future<Stream<LocationResult>> singleLocationUpdate(
-          LocationAccuracy accuracy) async =>
-      _client.singleLocationUpdate(accuracy);
-
-  static Future<Stream<LocationResult>> locationUpdates(
+  static Stream<LocationResult> singleLocationUpdate(
           LocationAccuracy accuracy) =>
-      _client.locationUpdates(accuracy);
+      _locationChannel.locationUpdates(_LocationUpdatesRequest(
+          strategy: _LocationUpdateStrategy.single, accuracy: accuracy));
 
-  /// When activated, the plugin will print following logs:
+  static Stream<LocationResult> locationUpdates(LocationAccuracy accuracy) =>
+      _locationChannel.locationUpdates(_LocationUpdatesRequest(
+          strategy: _LocationUpdateStrategy.continuous, accuracy: accuracy));
+
+  /// When activated, the plugin will print the following logs:
+  /// * location updates event (start/stop)
   /// * json payloads exchanged between flutter and platform plugins
-  static set verboseLogging(bool value) {
-    _client.verboseLogging = value;
-  }
+  static bool loggingEnabled = false;
 
-  static final _Client _client = _Client();
+  static final _LocationChannel _locationChannel = _LocationChannel();
 }
 
 class GeolocationException implements Exception {
@@ -159,5 +152,11 @@ class GeolocationException implements Exception {
   @override
   String toString() {
     return 'Geolocation error: $message';
+  }
+}
+
+_log(String message, {String tag}) {
+  if (Geolocation.loggingEnabled) {
+    debugPrint(tag != null ? '$tag: $message' : message);
   }
 }

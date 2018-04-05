@@ -3,8 +3,8 @@
 
 part of geolocation;
 
-class _LocationUpdateParam {
-  _LocationUpdateParam({
+class _LocationUpdatesRequest {
+  _LocationUpdatesRequest({
     @required this.strategy,
     @required this.accuracy,
   });

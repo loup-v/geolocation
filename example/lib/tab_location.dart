@@ -33,36 +33,29 @@ class _TabLocationState extends State<TabLocation> {
     }
   }
 
-  _onCurrentPressed() async {
+  _onCurrentPressed() {
     final int id = _createLocation('current', Colors.lightGreen);
-    Stream<LocationResult> stream =
-        await Geolocation.currentLocation(LocationAccuracy.best);
-    if (!mounted) return;
-
-    final subscription = stream.listen((result) {
-      setState(() {
-        _updateLocation(id, result);
-      });
-    });
-    _subscriptions.add(subscription);
+    _listenToLocation(id, Geolocation.currentLocation(LocationAccuracy.best));
   }
 
   _onSingleUpdatePressed() async {
     final int id = _createLocation('update', Colors.deepOrange);
-    Stream<LocationResult> stream =
-        await Geolocation.singleLocationUpdate(LocationAccuracy.best);
-    if (!mounted) return;
+    _listenToLocation(id, Geolocation.singleLocationUpdate(LocationAccuracy.best));
+  }
 
+  _listenToLocation(int id, Stream<LocationResult> stream) {
     final subscription = stream.listen((result) {
-      setState(() {
-        _updateLocation(id, result);
-      });
+      debugPrint('receive result for $id');
+      _updateLocation(id, result);
     });
-    _subscriptions.add(subscription);
 
     subscription.onDone(() {
+      debugPrint('stream done for $id');
       _subscriptions.remove(subscription);
     });
+
+    debugPrint('add stream for $id');
+    _subscriptions.add(subscription);
   }
 
   int _createLocation(String origin, Color color) {
@@ -318,11 +311,11 @@ class _Item extends StatelessWidget {
 class LocationData {
   LocationData({
     @required this.id,
-    @required this.result,
+    this.result,
     @required this.origin,
     @required this.color,
     @required this.createdAtTimestamp,
-    @required this.elapsedTimeSeconds,
+    this.elapsedTimeSeconds,
   });
 
   final int id;

@@ -10,8 +10,8 @@ class _Codec {
   static LocationResult decodeLocationResult(String data) =>
       LocationResult._fromJson(json.decode(data));
 
-  static String encodeLocationUpdateParam(_LocationUpdateParam param) =>
-      json.encode(param.toJson());
+  static String encodeLocationUpdatesRequest(_LocationUpdatesRequest request) =>
+      json.encode(request.toJson());
 
   // see: https://stackoverflow.com/questions/49611724/dart-how-to-json-decode-0-as-double
   static double parseJsonNumber(dynamic value) {

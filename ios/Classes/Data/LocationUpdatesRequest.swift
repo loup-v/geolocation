@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct LocationUpdateParam: Codable {
+struct LocationUpdatesRequest: Codable {
   let strategy: Strategy
   let accuracy: Facet
   

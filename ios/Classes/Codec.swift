@@ -13,7 +13,7 @@ struct Codec {
     return String(data: try! jsonEncoder.encode(result), encoding: .utf8)!
   }
   
-  static func decodeLocationUpdateParam(from arugments: Any?) -> LocationUpdateParam {
-    return try! jsonDecoder.decode(LocationUpdateParam.self, from: (arugments as! String).data(using: .utf8)!)
+  static func decodeLocationUpdatesRequest(from arugments: Any?) -> LocationUpdatesRequest {
+    return try! jsonDecoder.decode(LocationUpdatesRequest.self, from: (arugments as! String).data(using: .utf8)!)
   }
 }
