@@ -40,7 +40,6 @@ class _TabSettingsState extends State<TabSettings> {
       setState(() {
         _requestPermissionResult = result;
       });
-      _isLocationOperationalPressed();
     }
   }
 

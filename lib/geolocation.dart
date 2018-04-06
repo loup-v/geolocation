@@ -5,6 +5,7 @@ library geolocation;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -36,7 +37,7 @@ class Geolocation {
   /// See also:
   /// * [GeolocationResultError]
   /// * [GeolocationResultErrorType]
-  static Future<GeolocationResult> get isLocationOperational async =>
+  static Future<GeolocationResult> get isLocationOperational =>
       _locationChannel.isLocationOperational();
 
   /// On Android, it requests location permission.
@@ -58,7 +59,7 @@ class Geolocation {
   ///
   /// See also:
   /// * [isLocationOperational]
-  static Future<GeolocationResult> requestLocationPermission() async =>
+  static Future<GeolocationResult> requestLocationPermission() =>
       _locationChannel.requestLocationPermission();
 
   /// Retrieves the most recent [Location] currently available.
@@ -80,7 +81,7 @@ class Geolocation {
   /// [LocationResult.isSuccessful] means a location was retrieved and [LocationResult.location] is guaranteed
   /// to not be null.
   /// Otherwise, [GeolocationResult.error] will contain details on what failed.
-  static Future<LocationResult> get lastKnownLocation async =>
+  static Future<LocationResult> get lastKnownLocation =>
       _locationChannel.lastKnownLocation();
 
   /// Retrieves the current [Location], using different mechanics on Android and iOS that are

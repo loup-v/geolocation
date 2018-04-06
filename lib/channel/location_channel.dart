@@ -28,7 +28,7 @@ class _LocationChannel {
 
   // Active subscriptions to channel event stream of location updates
   // Every data from channel stream will be forwarded to the subscriptions
-  List<StreamSubscription<LocationResult>> _locationUpdatesSubscriptions = [];
+  List<_LocationUpdatesSubscription> _locationUpdatesSubscriptions = [];
 
   Future<GeolocationResult> isLocationOperational() async {
     final response = await _invokeChannelMethod(
@@ -55,43 +55,73 @@ class _LocationChannel {
     // The stream that will be returned for the current location request
     StreamController<LocationResult> controller;
 
+    _LocationUpdatesSubscription subscriptionWithRequest;
+
     // Subscribe and listen to channel stream of location results
-    // ignore: cancel_subscriptions
-    StreamSubscription<LocationResult> subscription;
-    subscription = _locationUpdatesChannel.stream.map((data) {
+    final StreamSubscription<LocationResult> subscription =
+        _locationUpdatesChannel.stream.map((data) {
       _log(data, tag: _loggingTag);
       return _Codec.decodeLocationResult(data);
     }).listen((LocationResult result) {
-      // forward channel stream location result to subscription
+      // Forward channel stream location result to subscription
       controller.add(result);
 
       // [_LocationUpdateStrategy.current] and [_LocationUpdateStrategy.single] only get a single result, then close
       if (request.strategy != _LocationUpdateStrategy.continuous) {
-        subscription.cancel();
-        _locationUpdatesSubscriptions.remove(subscription);
+        subscriptionWithRequest.subscription.cancel();
+        _locationUpdatesSubscriptions.remove(subscriptionWithRequest);
         controller.close();
       }
     });
 
     subscription.onDone(() {
-      _locationUpdatesSubscriptions.remove(subscription);
+      _locationUpdatesSubscriptions.remove(subscriptionWithRequest);
     });
 
-    _locationUpdatesSubscriptions.add(subscription);
+    subscriptionWithRequest =
+        _LocationUpdatesSubscription(request, subscription);
+
+    // Add unique id for each request, in order to be able to remove them on platform side afterwards
+    subscriptionWithRequest.request.id =
+        (_locationUpdatesSubscriptions.isNotEmpty
+                ? _locationUpdatesSubscriptions
+                    .map((it) => it.request.id)
+                    .reduce(math.max)
+                : 0) +
+            1;
+
+    _log('create location updates request: ${subscriptionWithRequest.request
+        .id}');
+    _locationUpdatesSubscriptions.add(subscriptionWithRequest);
 
     controller = new StreamController<LocationResult>.broadcast(onListen: () {
-      _invokeChannelMethod(_loggingTag, _channel, 'startLocationUpdates',
+      _log('add location updates request: ${subscriptionWithRequest.request
+          .id}');
+      _invokeChannelMethod(_loggingTag, _channel, 'addLocationUpdatesRequest',
           _Codec.encodeLocationUpdatesRequest(request));
-    }, onCancel: () {
-      subscription.cancel();
-      _locationUpdatesSubscriptions.remove(subscription);
+    }, onCancel: () async {
+      _log('remove location updates request: ${subscriptionWithRequest.request
+          .id}');
+      subscriptionWithRequest.subscription.cancel();
+
+      await _invokeChannelMethod(
+          _loggingTag,
+          _channel,
+          'removeLocationUpdatesRequest',
+          _Codec.encodeLocationUpdatesRequest(request));
+      _locationUpdatesSubscriptions.remove(subscriptionWithRequest);
     });
 
     return controller.stream;
   }
 }
 
+class _LocationUpdatesSubscription {
+  _LocationUpdatesSubscription(this.request, this.subscription);
 
+  final _LocationUpdatesRequest request;
+  final StreamSubscription<LocationResult> subscription;
+}
 
 // Custom event channel that manages a single instance of the stream and exposes.
 class _CustomEventChannel extends EventChannel {
@@ -150,7 +180,6 @@ class _CustomEventChannel extends EventChannel {
     return controller.stream;
   }
 }
-
 
 // Adds an onUnsubscribe callback that gets triggered on cancel and on done.
 // Warning: Wrapper does not handle "unsubscribe on error" behaviour.

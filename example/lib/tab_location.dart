@@ -45,16 +45,13 @@ class _TabLocationState extends State<TabLocation> {
 
   _listenToLocation(int id, Stream<LocationResult> stream) {
     final subscription = stream.listen((result) {
-      debugPrint('receive result for $id');
       _updateLocation(id, result);
     });
 
     subscription.onDone(() {
-      debugPrint('stream done for $id');
       _subscriptions.remove(subscription);
     });
 
-    debugPrint('add stream for $id');
     _subscriptions.add(subscription);
   }
 

@@ -6,6 +6,7 @@
 import Foundation
 
 struct LocationUpdatesRequest: Codable {
+  let id: Int
   let strategy: Strategy
   let accuracy: Facet
   

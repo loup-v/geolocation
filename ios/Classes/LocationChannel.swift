@@ -32,8 +32,10 @@ class LocationChannel {
       requestLocationPermission(on: result)
     case "lastKnownLocation":
       lastKnownLocation(on: result)
-    case "startLocationUpdates":
-      startLocationUpdates(for: Codec.decodeLocationUpdatesRequest(from: call.arguments))
+    case "addLocationUpdatesRequest":
+      addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(from: call.arguments))
+    case "removeLocationUpdatesRequest":
+      removeLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(from: call.arguments))
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -55,8 +57,12 @@ class LocationChannel {
     }
   }
 
-  private func startLocationUpdates(for request: LocationUpdatesRequest) {
-    locationClient.startLocationUpdates(for: request)
+  private func addLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
+    locationClient.addLocationUpdatesRequest(request)
+  }
+  
+  private func removeLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
+    locationClient.removeLocationUpdatesRequest(request)
   }
   
   
