@@ -3,41 +3,33 @@
 
 package io.intheloup.geolocation
 
-import com.google.android.gms.tasks.Task
-import com.squareup.moshi.Moshi
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import io.intheloup.geolocation.data.Param
-import io.intheloup.geolocation.data.Result
 import io.intheloup.geolocation.location.LocationClient
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
 
-class GeolocationPlugin(private val registrar: Registrar) : MethodCallHandler {
+class GeolocationPlugin(val registrar: Registrar) {
 
     private val locationClient = LocationClient(registrar.activity())
-    private val moshi = Moshi.Builder().build()
+    private val locationChannel = LocationChannel(locationClient)
 
     init {
         registrar.addRequestPermissionsResultListener(locationClient.permissionResultListener)
+        locationChannel.register(this)
     }
 
-    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        when (call.method) {
-            "lastKnownLocation" -> lastKnownLocation(result)
-//            "currentLocation" -> currentLocation(decodeSingleLocationParam(call.arguments), result)
-//            "singleLocationUpdate" -> singleLocationUpdate(decodeSingleLocationParam(call.arguments), result)
-            else -> result.notImplemented()
-        }
-    }
-
-    private fun lastKnownLocation(result: MethodChannel.Result) {
-        launch(UI) {
-            result.sendResponse(locationClient.lastKnownLocation())
-        }
-    }
+//    override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
+//        when (call.method) {
+//            "lastKnownLocation" -> lastKnownLocation(result)
+////            "currentLocation" -> currentLocation(decodeSingleLocationParam(call.arguments), result)
+////            "singleLocationUpdate" -> singleLocationUpdate(decodeSingleLocationParam(call.arguments), result)
+//            else -> result.notImplemented()
+//        }
+//    }
+//
+//    private fun lastKnownLocation(result: MethodChannel.Result) {
+//        launch(UI) {
+//            result.sendResponse(locationClient.lastKnownLocation())
+//        }
+//    }
 
 //    private fun currentLocation(param: Param.SingleLocationParam, result: Result) {
 //        runWithLocationContext(result) {
@@ -125,31 +117,30 @@ class GeolocationPlugin(private val registrar: Registrar) : MethodCallHandler {
 //                }
 //    }
 
-    private fun decodeSingleLocationParam(arguments: Any): Param.SingleLocationParam {
-        return moshi.adapter(Param.SingleLocationParam::class.java).fromJson(arguments as String)!!
-    }
+//    private fun decodeSingleLocationParam(arguments: Any): Param.SingleLocationParam {
+//        return moshi.adapter(Param.SingleLocationParam::class.java).fromJson(arguments as String)!!
+//    }
+//
+//    private fun <T> Task<T>.addFailureListener(result: MethodChannel.Result) = addOnFailureListener {
+//        result.sendResponse(Result.failure(Result.Error.Type.Runtime, message = it.message
+//                ?: ""))
+//    }
 
-    private fun <T> Task<T>.addFailureListener(result: MethodChannel.Result) = addOnFailureListener {
-        result.sendResponse(Result.failure(Result.Error.Type.Runtime, message = it.message
-                ?: ""))
-    }
 
-
-    private fun MethodChannel.Result.sendResponse(result: io.intheloup.geolocation.data.Result) {
-        success(moshi.adapter(Result::class.java).toJson(result))
-    }
-
-    private fun MethodChannel.Result.sendRuntimeError(error: Exception) {
-        sendResponse(Result.failure(Result.Error.Type.Runtime, message = error.message
-                ?: ""))
-    }
+//    private fun MethodChannel.Result.sendResponse(result: io.intheloup.geolocation.data.Result) {
+//        success(moshi.adapter(Result::class.java).toJson(result))
+//    }
+//
+//    private fun MethodChannel.Result.sendRuntimeError(error: Exception) {
+//        sendResponse(Result.failure(Result.Error.Type.Runtime, message = error.message
+//                ?: ""))
+//    }
 
     companion object {
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val channel = MethodChannel(registrar.messenger(), "io.intheloup.geolocation")
-            channel.setMethodCallHandler(GeolocationPlugin(registrar))
+            val plugin = GeolocationPlugin(registrar)
         }
     }
 
