@@ -17,12 +17,12 @@ import io.intheloup.geolocation.GeolocationPlugin
 import io.intheloup.geolocation.data.LocationData
 import io.intheloup.geolocation.data.LocationUpdatesRequest
 import io.intheloup.geolocation.data.Result
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
 import kotlin.coroutines.experimental.suspendCoroutine
 
+@SuppressLint("MissingPermission")
 class LocationClient(private val activity: Activity) {
-
-    private val locationProviderClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
-    private val permissionCallbacks = ArrayList<Callback<Unit, Unit>>()
 
     val permissionResultListener: PluginRegistry.RequestPermissionsResultListener = PluginRegistry.RequestPermissionsResultListener { id, _, grantResults ->
         if (id == GeolocationPlugin.Intents.LocationPermissionRequestId) {
@@ -38,13 +38,52 @@ class LocationClient(private val activity: Activity) {
         return@RequestPermissionsResultListener false
     }
 
+
+    private val locationProviderClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
+    private val permissionCallbacks = ArrayList<Callback<Unit, Unit>>()
+    private val locationUpdatesRequests = ArrayList<LocationUpdatesRequest>()
+    private var locationUpdatesCallback: ((Result) -> Unit)? = null
+    private var locationRequest: LocationRequest? = null
+
+    private val locationCallback: LocationCallback = object : LocationCallback() {
+        override fun onLocationResult(result: LocationResult) {
+            onLocationUpdatesResult(Result.success(LocationData.from(result.lastLocation)))
+        }
+    }
+
+
+    // One shot API
+
+    suspend fun isLocationOperational(): Result {
+        val status = currentServiceStatus()
+        return if (status.isReady) {
+            Result.success(true)
+        } else {
+            status.failure!!
+        }
+    }
+
+    suspend fun requestLocationPermission(): Result {
+        val validity = validateServiceStatus()
+        return if (validity.isValid) {
+            Result.success(true)
+        } else {
+            validity.failure!!
+        }
+    }
+
     suspend fun lastKnownLocation(): Result {
         val validity = validateServiceStatus()
         if (!validity.isValid) {
             return validity.failure!!
         }
 
-        val location = lastLocation()
+        val location = try {
+            lastLocation()
+        } catch (e: Exception) {
+            return Result.failure(Result.Error.Type.Runtime, message = e.message)
+        }
+
         return if (location != null) {
             Result.success(LocationData.from(location))
         } else {
@@ -52,56 +91,76 @@ class LocationClient(private val activity: Activity) {
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private suspend fun locationAvailability(): LocationAvailability = suspendCoroutine { cont ->
-        locationProviderClient.locationAvailability
-                .addOnSuccessListener { cont.resume(it) }
-                .addOnFailureListener { cont.resumeWithException(it) }
-    }
 
-    @SuppressLint("MissingPermission")
-    private suspend fun lastLocation(): Location? = suspendCoroutine { cont ->
-        locationProviderClient.lastLocation
-                .addOnSuccessListener { location: Location? -> cont.resume(location) }
-                .addOnFailureListener { cont.resumeWithException(it) }
-    }
-
-    @SuppressLint("MissingPermission")
-    suspend fun singleLocationUpdate(priority: Int): Location? = suspendCoroutine { cont ->
-        val request = LocationRequest.create()
-        request.priority = priority
-        request.numUpdates = 1
-        request.setExpirationDuration(30000)
-
-        locationProviderClient.requestLocationUpdates(request, object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                cont.resume(result.lastLocation)
-            }
-        }, null)
-    }
+    // Updates API
 
     fun addLocationUpdatesRequest(request: LocationUpdatesRequest) {
+        launch(UI) {
+            val validity = validateServiceStatus()
+            if (!validity.isValid) {
+                onLocationUpdatesResult(validity.failure!!)
+                return@launch
+            }
 
+            val isAnyRequestRunning = locationUpdatesRequests.isNotEmpty()
+            val isContinuousRequestRunning = locationUpdatesRequests.any { it.strategy == LocationUpdatesRequest.Strategy.Continuous }
+
+            val locationRequest = LocationRequest.create()
+            locationRequest.setExpirationDuration(30000)
+
+            if (isAnyRequestRunning) {
+                locationProviderClient.removeLocationUpdates(locationCallback)
+                locationRequest.priority = LocationHelper.getBestPriority(request.accuracy.android.androidValue, getBestRequestedPriority())
+            } else {
+                locationRequest.priority = request.accuracy.android.androidValue
+            }
+
+            if (isContinuousRequestRunning || request.strategy == LocationUpdatesRequest.Strategy.Continuous) {
+                locationRequest.interval = 10000
+                locationRequest.fastestInterval = 5000
+            } else {
+                locationRequest.numUpdates = 1
+            }
+
+            locationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null)
+        }
     }
 
     fun removeLocationUpdatesRequest(request: LocationUpdatesRequest) {
+        locationUpdatesRequests.removeAll { it.id == request.id }
 
-    }
-
-    private suspend fun requestPermission(): Boolean = suspendCoroutine { cont ->
-        val callback = Callback<Unit, Unit>(
-                success = { _ -> cont.resume(true) },
-                failure = { _ -> cont.resume(false) }
-        )
-        permissionCallbacks.add(callback)
-
-        val permission = if (LocationHelper.getLocationPermissionRequest(activity) == LocationHelper.LocationPermissionRequest.Fine) {
-            Manifest.permission.ACCESS_FINE_LOCATION
+        if (locationUpdatesRequests.isEmpty()) {
+            locationRequest = null
         } else {
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            val newPriority = LocationHelper.getBestPriority(locationRequest!!.priority, getBestRequestedPriority())
+            if (newPriority != locationRequest!!.priority) {
+                locationRequest!!.priority = newPriority
+                locationProviderClient.removeLocationUpdates(locationCallback)
+                locationProviderClient.requestLocationUpdates(locationRequest!!, locationCallback, null)
+            }
         }
-        ActivityCompat.requestPermissions(activity, arrayOf(permission), GeolocationPlugin.Intents.LocationPermissionRequestId)
     }
+
+    fun registerForLocationUpdates(callback: (Result) -> Unit) {
+        check(locationUpdatesCallback == null, { "trying to register a 2nd location updates callback" })
+        locationUpdatesCallback = callback
+    }
+
+    fun stopLocationUpdates() {
+        check(locationUpdatesCallback != null, { "trying to unregister a non-existent location updates callback" })
+        locationUpdatesCallback = null
+        locationProviderClient.removeLocationUpdates(locationCallback)
+    }
+
+
+    // Location updates
+
+    private fun onLocationUpdatesResult(result: Result) {
+        locationUpdatesCallback!!(result)
+    }
+
+
+    // Service status
 
     private suspend fun validateServiceStatus(): ValidateServiceStatus {
         val status = currentServiceStatus()
@@ -141,17 +200,61 @@ class LocationClient(private val activity: Activity) {
         return ServiceStatus(true)
     }
 
-    private class Callback<in T, in E>(val success: (T) -> Unit, val failure: (E) -> Unit)
 
-    private inner class LocationUpdatesCallback : LocationCallback() {
-        override fun onLocationResult(result: LocationResult) {
+    // Permission
 
+    private suspend fun requestPermission(): Boolean = suspendCoroutine { cont ->
+        val callback = Callback<Unit, Unit>(
+                success = { _ -> cont.resume(true) },
+                failure = { _ -> cont.resume(false) }
+        )
+        permissionCallbacks.add(callback)
+
+        val permission = if (LocationHelper.getLocationPermissionRequest(activity) == LocationHelper.LocationPermissionRequest.Fine) {
+            Manifest.permission.ACCESS_FINE_LOCATION
+        } else {
+            Manifest.permission.ACCESS_COARSE_LOCATION
         }
+        ActivityCompat.requestPermissions(activity, arrayOf(permission), GeolocationPlugin.Intents.LocationPermissionRequestId)
     }
 
-    private data class ServiceStatus(val isReady: Boolean,
-                                     val needsAuthorization: Boolean = false,
-                                     val failure: Result? = null)
 
-    private data class ValidateServiceStatus(val isValid: Boolean, val failure: Result? = null)
+    // Location helpers
+
+    private fun getBestRequestedPriority(): Int {
+        check(locationUpdatesRequests.isNotEmpty(), { "no requests to getBestRequestedPriority()" })
+
+        return locationUpdatesRequests.map { it.accuracy.android.androidValue }
+                .sortedWith(Comparator { o1, o2 ->
+                    when (o1) {
+                        o2 -> 0
+                        LocationHelper.getBestPriority(o1, o2) -> 1
+                        else -> -1
+                    }
+                })
+                .first()
+    }
+
+    private suspend fun locationAvailability(): LocationAvailability = suspendCoroutine { cont ->
+        locationProviderClient.locationAvailability
+                .addOnSuccessListener { cont.resume(it) }
+                .addOnFailureListener { cont.resumeWithException(it) }
+    }
+
+    private suspend fun lastLocation(): Location? = suspendCoroutine { cont ->
+        locationProviderClient.lastLocation
+                .addOnSuccessListener { location: Location? -> cont.resume(location) }
+                .addOnFailureListener { cont.resumeWithException(it) }
+    }
+
+
+    // Structures
+
+    private class Callback<in T, in E>(val success: (T) -> Unit, val failure: (E) -> Unit)
+
+    private class ServiceStatus(val isReady: Boolean,
+                                val needsAuthorization: Boolean = false,
+                                val failure: Result? = null)
+
+    private class ValidateServiceStatus(val isValid: Boolean, val failure: Result? = null)
 }

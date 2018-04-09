@@ -5,10 +5,10 @@ part of geolocation;
 
 class _Codec {
   static GeolocationResult decodeResult(String data) =>
-      GeolocationResult._fromJson(json.decode(data));
+      new GeolocationResult._fromJson(json.decode(data));
 
   static LocationResult decodeLocationResult(String data) =>
-      LocationResult._fromJson(json.decode(data));
+      new LocationResult._fromJson(json.decode(data));
 
   static String encodeLocationUpdatesRequest(_LocationUpdatesRequest request) =>
       json.encode(request.toJson());

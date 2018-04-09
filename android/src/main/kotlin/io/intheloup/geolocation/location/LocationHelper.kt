@@ -9,17 +9,18 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
 import android.support.v4.content.ContextCompat
+import com.google.android.gms.location.LocationRequest
 
 object LocationHelper {
 
-    fun getLocationPermissionRequest(context: Context) : LocationPermissionRequest {
+    fun getLocationPermissionRequest(context: Context): LocationPermissionRequest {
         val permissions = context.packageManager
                 .getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
                 .requestedPermissions
 
         return when {
-            permissions.count {  it == Manifest.permission.ACCESS_FINE_LOCATION } > 0 -> LocationPermissionRequest.Fine
-            permissions.count {  it == Manifest.permission.ACCESS_COARSE_LOCATION } > 0 -> LocationPermissionRequest.Coarse
+            permissions.count { it == Manifest.permission.ACCESS_FINE_LOCATION } > 0 -> LocationPermissionRequest.Fine
+            permissions.count { it == Manifest.permission.ACCESS_COARSE_LOCATION } > 0 -> LocationPermissionRequest.Coarse
             else -> LocationPermissionRequest.Undefined
         }
     }
@@ -41,6 +42,18 @@ object LocationHelper {
     fun hasLocationPermission(context: Context) =
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                     ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+    fun getBestPriority(p1: Int, p2: Int) = when {
+        p1 == LocationRequest.PRIORITY_HIGH_ACCURACY -> p1
+        p2 == LocationRequest.PRIORITY_HIGH_ACCURACY -> p2
+        p1 == LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY -> p1
+        p2 == LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY -> p2
+        p1 == LocationRequest.PRIORITY_LOW_POWER -> p1
+        p2 == LocationRequest.PRIORITY_LOW_POWER -> p2
+        p1 == LocationRequest.PRIORITY_NO_POWER -> p1
+        p2 == LocationRequest.PRIORITY_NO_POWER -> p2
+        else -> throw IllegalArgumentException("Unknown priority: $p1 vs $p2")
+    }
 
     enum class LocationPermissionRequest {
         Undefined, Coarse, Fine

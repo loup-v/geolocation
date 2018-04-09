@@ -90,27 +90,30 @@ class _LocationChannel {
                 : 0) +
             1;
 
-    _log('create location updates request: ${subscriptionWithRequest.request
-        .id}');
+    _log('create location updates request [id=${subscriptionWithRequest.request
+        .id}]');
     _locationUpdatesSubscriptions.add(subscriptionWithRequest);
 
-    controller = new StreamController<LocationResult>.broadcast(onListen: () {
-      _log('add location updates request: ${subscriptionWithRequest.request
-          .id}');
-      _invokeChannelMethod(_loggingTag, _channel, 'addLocationUpdatesRequest',
-          _Codec.encodeLocationUpdatesRequest(request));
-    }, onCancel: () async {
-      _log('remove location updates request: ${subscriptionWithRequest.request
-          .id}');
-      subscriptionWithRequest.subscription.cancel();
+    controller = new StreamController<LocationResult>.broadcast(
+      onListen: () {
+        _log('add location updates request [id=${subscriptionWithRequest.request
+            .id}]');
+        _invokeChannelMethod(_loggingTag, _channel, 'addLocationUpdatesRequest',
+            _Codec.encodeLocationUpdatesRequest(request));
+      },
+      onCancel: () async {
+        _log('remove location updates request [id=${subscriptionWithRequest.request
+            .id}]');
+        subscriptionWithRequest.subscription.cancel();
 
-      await _invokeChannelMethod(
-          _loggingTag,
-          _channel,
-          'removeLocationUpdatesRequest',
-          _Codec.encodeLocationUpdatesRequest(request));
-      _locationUpdatesSubscriptions.remove(subscriptionWithRequest);
-    });
+        await _invokeChannelMethod(
+            _loggingTag,
+            _channel,
+            'removeLocationUpdatesRequest',
+            _Codec.encodeLocationUpdatesRequest(request));
+        _locationUpdatesSubscriptions.remove(subscriptionWithRequest);
+      },
+    );
 
     return controller.stream;
   }
@@ -128,7 +131,6 @@ class _CustomEventChannel extends EventChannel {
   _CustomEventChannel(name, [codec = const StandardMethodCodec()])
       : super(name, codec);
 
-  StreamController<dynamic> controller;
   Stream<dynamic> _stream;
 
   Stream<dynamic> get stream {
@@ -141,6 +143,7 @@ class _CustomEventChannel extends EventChannel {
   @override
   Stream<dynamic> receiveBroadcastStream([dynamic arguments]) {
     final MethodChannel methodChannel = new MethodChannel(name, codec);
+    StreamController<dynamic> controller;
     controller = new StreamController<dynamic>.broadcast(onListen: () async {
       BinaryMessages.setMessageHandler(name, (ByteData reply) async {
         if (reply == null) {
@@ -180,70 +183,3 @@ class _CustomEventChannel extends EventChannel {
     return controller.stream;
   }
 }
-
-// Adds an onUnsubscribe callback that gets triggered on cancel and on done.
-// Warning: Wrapper does not handle "unsubscribe on error" behaviour.
-//class _StreamSubscriptionWrapper<T> extends StreamSubscription<T> {
-//  _StreamSubscriptionWrapper(this._target) {
-//    _target.onDone(() {
-//      _callUnsubscribe();
-//    });
-//  }
-//
-//  final StreamSubscription<T> _target;
-//  VoidCallback _onUnsubscribe;
-//
-//  onUnsubscribe(VoidCallback onUnsubscribe) {
-//    this._onUnsubscribe = onUnsubscribe;
-//  }
-//
-//  _callUnsubscribe() {
-//    if (_onUnsubscribe != null) {
-//      _onUnsubscribe();
-//    }
-//  }
-//
-//  @override
-//  Future cancel() {
-//    _callUnsubscribe();
-//    return _target.cancel();
-//  }
-//
-//  @override
-//  void onData(void handleData(T data)) {
-//    _target.onData(handleData);
-//  }
-//
-//  @override
-//  void onError(Function handleError) {
-//    _target.onError(handleError);
-//  }
-//
-//  @override
-//  void onDone(void handleDone()) {
-//    _target.onDone(() {
-//      _callUnsubscribe();
-//      handleDone();
-//    });
-//  }
-//
-//  @override
-//  void pause([Future resumeSignal]) {
-//    _target.pause(resumeSignal);
-//  }
-//
-//  @override
-//  void resume() {
-//    _target.resume();
-//  }
-//
-//  @override
-//  bool get isPaused {
-//    return _target.isPaused;
-//  }
-//
-//  @override
-//  Future<E> asFuture<E>([E futureValue]) {
-//    return _target.asFuture(futureValue);
-//  }
-//}
