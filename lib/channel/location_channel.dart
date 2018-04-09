@@ -79,7 +79,7 @@ class _LocationChannel {
     });
 
     subscriptionWithRequest =
-        _LocationUpdatesSubscription(request, subscription);
+        new _LocationUpdatesSubscription(request, subscription);
 
     // Add unique id for each request, in order to be able to remove them on platform side afterwards
     subscriptionWithRequest.request.id =

@@ -15,7 +15,7 @@ class GeolocationResult {
   GeolocationResult._fromJson(Map<String, dynamic> json)
       : isSuccessful = json['isSuccessful'],
         error = json['error'] != null
-            ? GeolocationResultError._fromJson(json['error'])
+            ? new GeolocationResultError._fromJson(json['error'])
             : null;
 
   final bool isSuccessful;
@@ -51,7 +51,7 @@ class GeolocationResultError {
         message = json['message'],
         additionalInfo = GeolocationResultError._mapAdditionalInfoJson(json) {
     if (json.containsKey('fatal') && json['fatal']) {
-      throw GeolocationException(message);
+      throw new GeolocationException(message);
     }
   }
 

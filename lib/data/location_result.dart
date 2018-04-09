@@ -6,7 +6,7 @@ part of geolocation;
 class LocationResult extends GeolocationResult {
   LocationResult._fromJson(Map<String, dynamic> json)
       : location =
-            json['data'] != null ? Location._fromJson(json['data']) : null,
+            json['data'] != null ? new Location._fromJson(json['data']) : null,
         super._fromJson(json);
 
   final Location location;

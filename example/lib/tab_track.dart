@@ -40,12 +40,12 @@ class _TabTrackState extends State<TabTrack> {
         _isTracking = true;
       });
 
-      _subscriptionStartedTimestamp = DateTime.now().millisecondsSinceEpoch;
+      _subscriptionStartedTimestamp = new DateTime.now().millisecondsSinceEpoch;
       _subscription =
           Geolocation.locationUpdates(LocationAccuracy.best).listen((result) {
         final location = new _LocationData(
           result: result,
-          elapsedTimeSeconds: (DateTime.now().millisecondsSinceEpoch -
+          elapsedTimeSeconds: (new DateTime.now().millisecondsSinceEpoch -
                   _subscriptionStartedTimestamp) ~/
               1000,
         );

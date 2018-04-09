@@ -64,12 +64,12 @@ class _TabLocationState extends State<TabLocation> {
     setState(() {
       _locations.insert(
         0,
-        LocationData(
+        new LocationData(
           id: newId,
           result: null,
           origin: origin,
           color: color,
-          createdAtTimestamp: DateTime.now().millisecondsSinceEpoch,
+          createdAtTimestamp: new DateTime.now().millisecondsSinceEpoch,
           elapsedTimeSeconds: null,
         ),
       );
@@ -85,13 +85,13 @@ class _TabLocationState extends State<TabLocation> {
     final LocationData location = _locations[index];
 
     setState(() {
-      _locations[index] = LocationData(
+      _locations[index] = new LocationData(
         id: location.id,
         result: result,
         origin: location.origin,
         color: location.color,
         createdAtTimestamp: location.createdAtTimestamp,
-        elapsedTimeSeconds: (DateTime.now().millisecondsSinceEpoch -
+        elapsedTimeSeconds: (new DateTime.now().millisecondsSinceEpoch -
                 location.createdAtTimestamp) ~/
             1000,
       );

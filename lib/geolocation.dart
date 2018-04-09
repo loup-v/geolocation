@@ -102,7 +102,7 @@ class Geolocation {
   /// See also:
   /// * [singleLocationUpdate]
   static Stream<LocationResult> currentLocation(LocationAccuracy accuracy) =>
-      _locationChannel.locationUpdates(_LocationUpdatesRequest(
+      _locationChannel.locationUpdates(new _LocationUpdatesRequest(
           strategy: _LocationUpdateStrategy.current, accuracy: accuracy));
 
   /// Requests a single [Location] update with the provided [accuracy].
@@ -130,11 +130,11 @@ class Geolocation {
   /// * [currentLocation]
   static Stream<LocationResult> singleLocationUpdate(
           LocationAccuracy accuracy) =>
-      _locationChannel.locationUpdates(_LocationUpdatesRequest(
+      _locationChannel.locationUpdates(new _LocationUpdatesRequest(
           strategy: _LocationUpdateStrategy.single, accuracy: accuracy));
 
   static Stream<LocationResult> locationUpdates(LocationAccuracy accuracy) =>
-      _locationChannel.locationUpdates(_LocationUpdatesRequest(
+      _locationChannel.locationUpdates(new _LocationUpdatesRequest(
           strategy: _LocationUpdateStrategy.continuous, accuracy: accuracy));
 
   /// When activated, the plugin will print the following logs:
@@ -142,7 +142,7 @@ class Geolocation {
   /// * json payloads exchanged between flutter and platform plugins
   static bool loggingEnabled = false;
 
-  static final _LocationChannel _locationChannel = _LocationChannel();
+  static final _LocationChannel _locationChannel = new _LocationChannel();
 }
 
 class GeolocationException implements Exception {
