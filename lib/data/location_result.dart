@@ -4,12 +4,18 @@
 part of geolocation;
 
 class LocationResult extends GeolocationResult {
-  LocationResult._fromJson(Map<String, dynamic> json)
-      : location =
-            json['data'] != null ? new Location._fromJson(json['data']) : null,
-        super._fromJson(json);
+  LocationResult._(
+      bool isSuccessful, GeolocationResultError error, this.locations)
+      : super._(isSuccessful, error);
 
-  final Location location;
+  /// In context of location updates, result might contain more than one location: all
+  /// locations retrieved by the device since the previous result.
+  /// Locations are ordered from oldest to newest.
+  /// Locations are guaranteed to contain at least one location.
+  final List<Location> locations;
+
+  /// Convenience to get the newest single location
+  Location get location => locations.last;
 
   @override
   String dataToString() {

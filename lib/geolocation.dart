@@ -101,9 +101,15 @@ class Geolocation {
   ///
   /// See also:
   /// * [singleLocationUpdate]
-  static Stream<LocationResult> currentLocation(LocationAccuracy accuracy) =>
+  static Stream<LocationResult> currentLocation({
+    @required LocationAccuracy accuracy,
+    bool inBackground = false,
+  }) =>
       _locationChannel.locationUpdates(new _LocationUpdatesRequest(
-          strategy: _LocationUpdateStrategy.current, accuracy: accuracy));
+        _LocationUpdateStrategy.current,
+        accuracy,
+        inBackground,
+      ));
 
   /// Requests a single [Location] update with the provided [accuracy].
   /// If you just want to get a single optimized and accurate location, it's better to use [currentLocation].
@@ -128,14 +134,27 @@ class Geolocation {
   ///
   /// See also:
   /// * [currentLocation]
-  static Stream<LocationResult> singleLocationUpdate(
-          LocationAccuracy accuracy) =>
+  static Stream<LocationResult> singleLocationUpdate({
+    @required LocationAccuracy accuracy,
+    bool inBackground = false,
+  }) =>
       _locationChannel.locationUpdates(new _LocationUpdatesRequest(
-          strategy: _LocationUpdateStrategy.single, accuracy: accuracy));
+        _LocationUpdateStrategy.single,
+        accuracy,
+        inBackground,
+      ));
 
-  static Stream<LocationResult> locationUpdates(LocationAccuracy accuracy) =>
+  static Stream<LocationResult> locationUpdates({
+    @required LocationAccuracy accuracy,
+    double displacementFilter = 0.0,
+    bool inBackground = false,
+  }) =>
       _locationChannel.locationUpdates(new _LocationUpdatesRequest(
-          strategy: _LocationUpdateStrategy.continuous, accuracy: accuracy));
+        _LocationUpdateStrategy.continuous,
+        accuracy,
+        inBackground,
+        displacementFilter,
+      ));
 
   /// When activated, the plugin will print the following logs:
   /// * location updates event (start/stop)

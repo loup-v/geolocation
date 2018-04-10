@@ -17,10 +17,10 @@ class LocationChannel {
   }
   
   func register(on plugin: SwiftGeolocationPlugin) {
-    let methodChannel = FlutterMethodChannel(name: "io.intheloup.geolocation/location", binaryMessenger: plugin.registrar.messenger())
+    let methodChannel = FlutterMethodChannel(name: "geolocation/location", binaryMessenger: plugin.registrar.messenger())
     methodChannel.setMethodCallHandler(handleMethodCall(_:result:))
     
-    let eventChannel = FlutterEventChannel(name: "io.intheloup.geolocation/locationUpdates", binaryMessenger: plugin.registrar.messenger())
+    let eventChannel = FlutterEventChannel(name: "geolocation/locationUpdates", binaryMessenger: plugin.registrar.messenger())
     eventChannel.setStreamHandler(locationUpdatesHandler)
   }
   
@@ -74,14 +74,14 @@ class LocationChannel {
     }
     
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-      locationClient.registerForLocationUpdates { result in
+      locationClient.registerLocationUpdates { result in
         events(Codec.encode(result: result))
       }
       return nil
     }
     
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
-      locationClient.stopLocationUpdates()
+      locationClient.deregisterLocationUpdatesCallback()
       return nil
     }
   }

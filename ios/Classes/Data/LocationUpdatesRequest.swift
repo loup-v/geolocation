@@ -9,6 +9,8 @@ struct LocationUpdatesRequest: Codable {
   let id: Int
   let strategy: Strategy
   let accuracy: Facet
+  let displacementFilter: Float
+  let inBackground: Bool
   
   struct Facet: Codable {
     let ios: Accuracy

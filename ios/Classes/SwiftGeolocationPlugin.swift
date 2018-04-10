@@ -8,7 +8,7 @@ import UIKit
 import CoreLocation
 
 @available(iOS 9.0, *)
-public class SwiftGeolocationPlugin: NSObject, FlutterPlugin {
+public class SwiftGeolocationPlugin: NSObject, FlutterPlugin, UIApplicationDelegate {
   
   internal let registrar: FlutterPluginRegistrar
   private let locationClient = LocationClient()
@@ -19,11 +19,23 @@ public class SwiftGeolocationPlugin: NSObject, FlutterPlugin {
     self.locationChannel = LocationChannel(locationClient: locationClient)
     super.init()
     
+    registrar.addApplicationDelegate(self)
     locationChannel.register(on: self)
   }
   
   public static func register(with registrar: FlutterPluginRegistrar) {
     _ = SwiftGeolocationPlugin(registrar: registrar)
+  }
+  
+  
+  // UIApplicationDelegate
+  
+  public func applicationDidBecomeActive(_ application: UIApplication) {
+    
+  }
+  
+  public func applicationWillResignActive(_ application: UIApplication) {
+    
   }
 }
 

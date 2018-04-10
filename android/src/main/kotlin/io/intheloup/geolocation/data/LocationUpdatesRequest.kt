@@ -7,7 +7,11 @@ import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 
 
-class LocationUpdatesRequest(val id: Int, val strategy: Strategy, val accuracy: Facet) {
+class LocationUpdatesRequest(val id: Int,
+                             val strategy: Strategy,
+                             val accuracy: Facet,
+                             val inBackground: Boolean,
+                             val displacementFilter: Float) {
 
     class Facet(val android: Priority)
 

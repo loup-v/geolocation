@@ -14,10 +14,10 @@ import kotlinx.coroutines.experimental.launch
 class LocationChannel(private val locationClient: LocationClient) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 
     fun register(plugin: GeolocationPlugin) {
-        val methodChannel = MethodChannel(plugin.registrar.messenger(), "io.intheloup.geolocation/location")
+        val methodChannel = MethodChannel(plugin.registrar.messenger(), "geolocation/location")
         methodChannel.setMethodCallHandler(this)
 
-        val eventChannel = EventChannel(plugin.registrar.messenger(), "io.intheloup.geolocation/locationUpdates")
+        val eventChannel = EventChannel(plugin.registrar.messenger(), "geolocation/locationUpdates")
         eventChannel.setStreamHandler(this)
     }
 
@@ -40,11 +40,15 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
     }
 
     private fun addLocationUpdatesRequest(request: LocationUpdatesRequest) {
-        locationClient.addLocationUpdatesRequest(request)
+        launch(UI) {
+            locationClient.addLocationUpdatesRequest(request)
+        }
     }
 
     private fun removeLocationUpdatesRequest(request: LocationUpdatesRequest) {
-        locationClient.removeLocationUpdatesRequest(request)
+        launch(UI) {
+            locationClient.removeLocationUpdatesRequest(request)
+        }
     }
 
 
@@ -65,12 +69,12 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
     // EventChannel.StreamHandler
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
-        locationClient.registerForLocationUpdates { result ->
+        locationClient.registerLocationUpdatesCallback { result ->
             events.success(Codec.encodeResult(result))
         }
     }
 
     override fun onCancel(arguments: Any?) {
-        locationClient.stopLocationUpdates()
+        locationClient.deregisterLocationUpdatesCallback()
     }
 }

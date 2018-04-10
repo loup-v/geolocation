@@ -5,12 +5,7 @@ part of geolocation;
 
 /// Location data retrieved from the platform
 class Location {
-  Location._({this.latitude, this.longitude, this.altitude});
-
-  Location._fromJson(Map<String, dynamic> json)
-      : latitude = _Codec.parseJsonNumber(json['latitude']),
-        longitude = _Codec.parseJsonNumber(json['longitude']),
-        altitude = _Codec.parseJsonNumber(json['altitude']);
+  Location._(this.latitude, this.longitude, this.altitude);
 
   /// Latitude in degrees
   final double latitude;

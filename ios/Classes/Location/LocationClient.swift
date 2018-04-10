@@ -18,6 +18,9 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     locationManager.delegate = self
   }
   
+  
+  // One shot API
+  
   func isLocationOperational() -> Result<Bool> {
     let status: ServiceStatus<Bool> = checkServiceStatus()
     return status.isReady ? Result<Bool>.success(with: true) : status.failure!
@@ -31,15 +34,18 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     })
   }
   
-  func lastKnownLocation(_ callback: @escaping (Result<Location>) -> Void) {
+  func lastKnownLocation(_ callback: @escaping (Result<[Location]>) -> Void) {
     runWithLocationService(success: {
       if let location = self.locationManager.location {
-        callback(Result<Location>.success(with: Location(from: location)))
+        callback(Result<Location>.success(with: [Location(from: location)]))
       } else {
         callback(Result<Location>.failure(of: .locationNotFound))
       }
     }, failure: callback)
   }
+  
+  
+  // Location Updates API
   
   func addLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
     runWithLocationService(success: {
@@ -74,10 +80,18 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     self.updateLocationRequestsAccuracy()
   }
   
-  func registerForLocationUpdates(_ callback: @escaping LocationUpdatesCallback) {
+  func registerLocationUpdates(callback: @escaping LocationUpdatesCallback) {
     precondition(locationUpdatesCallback == nil, "trying to register a 2nd location updates callback")
     locationUpdatesCallback = callback
   }
+  
+  func deregisterLocationUpdatesCallback() {
+    precondition(locationUpdatesCallback != nil, "trying to deregister a non-existent location updates callback")
+    locationUpdatesCallback = nil
+  }
+  
+  
+  // Helpers
   
   private func updateLocationRequestsAccuracy() {
     guard !locationUpdatesRequests.isEmpty else {
@@ -90,13 +104,6 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     })!.accuracy.ios.clValue
     
     locationManager.desiredAccuracy = bestRequestedAccuracy
-  }
-  
-  func stopLocationUpdates() {
-    precondition(locationUpdatesCallback != nil, "trying to unregister a non-existent location updates callback")
-    locationUpdatesCallback = nil
-    
-    locationManager.stopUpdatingLocation()
   }
   
   private func runWithLocationService<T>(success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
@@ -155,11 +162,11 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-    locationUpdatesCallback!(Result<Location>.success(with: Location(from: locations.last!)))
+    locationUpdatesCallback?(Result<[Location]>.success(with: locations.map { Location(from: $0) }))
   }
   
   public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-    locationUpdatesCallback!(Result<Location>.failure(of: .runtime, message: error.localizedDescription))
+    locationUpdatesCallback!(Result<[Location]>.failure(of: .runtime, message: error.localizedDescription))
   }
   
   struct Callback<T, E> {
@@ -167,7 +174,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     let failure: (E) -> Void
   }
   
-  typealias LocationUpdatesCallback = (Result<Location>) -> Void
+  typealias LocationUpdatesCallback = (Result<[Location]>) -> Void
   
   struct ServiceStatus<T: Codable> {
     let isReady: Bool

@@ -5,7 +5,7 @@ part of geolocation;
 
 class _LocationChannel {
   static const MethodChannel _channel =
-      const MethodChannel('io.intheloup.geolocation/location');
+      const MethodChannel('geolocation/location');
 
   // Location updates communicate with platform plugin through a mix of [EventChannel] and [MethodChannel].
   // Reasons:
@@ -22,7 +22,7 @@ class _LocationChannel {
   //    A single location subscription should be closed after a single result was listened to while a continuous update subscription will continue
   //    until owner cancels it.
   static final _CustomEventChannel _locationUpdatesChannel =
-      new _CustomEventChannel('io.intheloup.geolocation/locationUpdates');
+      new _CustomEventChannel('geolocation/locationUpdates');
 
   static const String _loggingTag = 'location result';
 

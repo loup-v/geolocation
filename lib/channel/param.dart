@@ -4,14 +4,14 @@
 part of geolocation;
 
 class _LocationUpdatesRequest {
-  _LocationUpdatesRequest({
-    @required this.strategy,
-    @required this.accuracy,
-  });
+  _LocationUpdatesRequest(
+      this.strategy, this.accuracy, this.inBackground, [this.displacementFilter = 0.0]);
 
   int id;
   final _LocationUpdateStrategy strategy;
   final LocationAccuracy accuracy;
+  final bool inBackground;
+  final double displacementFilter;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -20,6 +20,8 @@ class _LocationUpdatesRequest {
           'ios': _Codec.encodeEnum(accuracy.ios),
           'android': _Codec.encodeEnum(accuracy.android),
         },
+        'displacementFilter': displacementFilter,
+        'inBackground': inBackground,
       };
 }
 

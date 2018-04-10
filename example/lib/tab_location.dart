@@ -35,12 +35,15 @@ class _TabLocationState extends State<TabLocation> {
 
   _onCurrentPressed() {
     final int id = _createLocation('current', Colors.lightGreen);
-    _listenToLocation(id, Geolocation.currentLocation(LocationAccuracy.best));
+    _listenToLocation(
+        id,
+        Geolocation.currentLocation(accuracy: LocationAccuracy.best));
   }
 
   _onSingleUpdatePressed() async {
     final int id = _createLocation('update', Colors.deepOrange);
-    _listenToLocation(id, Geolocation.singleLocationUpdate(LocationAccuracy.best));
+    _listenToLocation(
+        id, Geolocation.singleLocationUpdate(accuracy: LocationAccuracy.best));
   }
 
   _listenToLocation(int id, Stream<LocationResult> stream) {

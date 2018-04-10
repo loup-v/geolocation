@@ -41,8 +41,9 @@ class _TabTrackState extends State<TabTrack> {
       });
 
       _subscriptionStartedTimestamp = new DateTime.now().millisecondsSinceEpoch;
-      _subscription =
-          Geolocation.locationUpdates(LocationAccuracy.best).listen((result) {
+      _subscription = Geolocation
+          .locationUpdates(accuracy: LocationAccuracy.best)
+          .listen((result) {
         final location = new _LocationData(
           result: result,
           elapsedTimeSeconds: (new DateTime.now().millisecondsSinceEpoch -
@@ -56,7 +57,6 @@ class _TabTrackState extends State<TabTrack> {
       });
 
       _subscription.onDone(() {
-        debugPrint('done!');
         setState(() {
           _isTracking = false;
         });

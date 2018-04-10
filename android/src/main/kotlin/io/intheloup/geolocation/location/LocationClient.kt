@@ -17,8 +17,6 @@ import io.intheloup.geolocation.GeolocationPlugin
 import io.intheloup.geolocation.data.LocationData
 import io.intheloup.geolocation.data.LocationUpdatesRequest
 import io.intheloup.geolocation.data.Result
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
 import kotlin.coroutines.experimental.suspendCoroutine
 
 @SuppressLint("MissingPermission")
@@ -43,11 +41,12 @@ class LocationClient(private val activity: Activity) {
     private val permissionCallbacks = ArrayList<Callback<Unit, Unit>>()
     private val locationUpdatesRequests = ArrayList<LocationUpdatesRequest>()
     private var locationUpdatesCallback: ((Result) -> Unit)? = null
-    private var locationRequest: LocationRequest? = null
+    private var currentLocationRequest: LocationRequest? = null
+    private var isPaused = false
 
     private val locationCallback: LocationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
-            onLocationUpdatesResult(Result.success(LocationData.from(result.lastLocation)))
+            onLocationUpdatesResult(Result.success(result.locations.map { LocationData.from(it) }))
         }
     }
 
@@ -85,7 +84,7 @@ class LocationClient(private val activity: Activity) {
         }
 
         return if (location != null) {
-            Result.success(LocationData.from(location))
+            Result.success(arrayOf(LocationData.from(location)))
         } else {
             Result.failure(Result.Error.Type.LocationNotFound)
         }
@@ -94,61 +93,50 @@ class LocationClient(private val activity: Activity) {
 
     // Updates API
 
-    fun addLocationUpdatesRequest(request: LocationUpdatesRequest) {
-        launch(UI) {
-            val validity = validateServiceStatus()
-            if (!validity.isValid) {
-                onLocationUpdatesResult(validity.failure!!)
-                return@launch
-            }
-
-            val isAnyRequestRunning = locationUpdatesRequests.isNotEmpty()
-            val isContinuousRequestRunning = locationUpdatesRequests.any { it.strategy == LocationUpdatesRequest.Strategy.Continuous }
-
-            val locationRequest = LocationRequest.create()
-            locationRequest.setExpirationDuration(30000)
-
-            if (isAnyRequestRunning) {
-                locationProviderClient.removeLocationUpdates(locationCallback)
-                locationRequest.priority = LocationHelper.getBestPriority(request.accuracy.android.androidValue, getBestRequestedPriority())
-            } else {
-                locationRequest.priority = request.accuracy.android.androidValue
-            }
-
-            if (isContinuousRequestRunning || request.strategy == LocationUpdatesRequest.Strategy.Continuous) {
-                locationRequest.interval = 10000
-                locationRequest.fastestInterval = 5000
-            } else {
-                locationRequest.numUpdates = 1
-            }
-
-            locationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null)
+    suspend fun addLocationUpdatesRequest(request: LocationUpdatesRequest) {
+        val validity = validateServiceStatus()
+        if (!validity.isValid) {
+            onLocationUpdatesResult(validity.failure!!)
+            return
         }
+
+        locationUpdatesRequests.add(request)
+        updateRunningRequest()
     }
 
-    fun removeLocationUpdatesRequest(request: LocationUpdatesRequest) {
+    suspend fun removeLocationUpdatesRequest(request: LocationUpdatesRequest) {
         locationUpdatesRequests.removeAll { it.id == request.id }
-
-        if (locationUpdatesRequests.isEmpty()) {
-            locationRequest = null
-        } else {
-            val newPriority = LocationHelper.getBestPriority(locationRequest!!.priority, getBestRequestedPriority())
-            if (newPriority != locationRequest!!.priority) {
-                locationRequest!!.priority = newPriority
-                locationProviderClient.removeLocationUpdates(locationCallback)
-                locationProviderClient.requestLocationUpdates(locationRequest!!, locationCallback, null)
-            }
-        }
+        updateRunningRequest()
     }
 
-    fun registerForLocationUpdates(callback: (Result) -> Unit) {
+    fun registerLocationUpdatesCallback(callback: (Result) -> Unit) {
         check(locationUpdatesCallback == null, { "trying to register a 2nd location updates callback" })
         locationUpdatesCallback = callback
     }
 
-    fun stopLocationUpdates() {
-        check(locationUpdatesCallback != null, { "trying to unregister a non-existent location updates callback" })
+    fun deregisterLocationUpdatesCallback() {
+        check(locationUpdatesCallback != null, { "trying to deregister a non-existent location updates callback" })
         locationUpdatesCallback = null
+    }
+
+
+    // Lifecycle API
+
+    fun resume() {
+        if (currentLocationRequest == null || !isPaused) {
+            return
+        }
+
+        isPaused = false
+        locationProviderClient.requestLocationUpdates(currentLocationRequest!!, locationCallback, null)
+    }
+
+    fun pause() {
+        if (currentLocationRequest == null || isPaused || locationUpdatesRequests.any { it.inBackground }) {
+            return
+        }
+
+        isPaused = true
         locationProviderClient.removeLocationUpdates(locationCallback)
     }
 
@@ -156,7 +144,83 @@ class LocationClient(private val activity: Activity) {
     // Location updates
 
     private fun onLocationUpdatesResult(result: Result) {
-        locationUpdatesCallback!!(result)
+        locationUpdatesCallback?.invoke(result)
+    }
+
+    private suspend fun updateRunningRequest() {
+        if (locationUpdatesRequests.isEmpty()) {
+            currentLocationRequest = null
+            isPaused = false
+            locationProviderClient.removeLocationUpdates(locationCallback)
+            return
+        }
+
+        if (locationUpdatesRequests.all { it.strategy == LocationUpdatesRequest.Strategy.Current }) {
+            val lastKnownSuccessful = currentLocation()
+            if (lastKnownSuccessful) {
+                return
+            }
+        }
+
+        val locationRequest = LocationRequest.create()
+        locationRequest.setExpirationDuration(30000)
+
+        locationRequest.priority = locationUpdatesRequests.map { it.accuracy.android.androidValue }
+                .sortedWith(Comparator { o1, o2 ->
+                    when (o1) {
+                        o2 -> 0
+                        LocationHelper.getBestPriority(o1, o2) -> 1
+                        else -> -1
+                    }
+                })
+                .first()
+
+        locationRequest.smallestDisplacement = locationUpdatesRequests.map { it.displacementFilter }.min()!!
+
+        if (locationUpdatesRequests.any { it.strategy == LocationUpdatesRequest.Strategy.Continuous }) {
+            locationRequest.interval = 10000
+            locationRequest.fastestInterval = 5000
+        } else {
+            locationRequest.numUpdates = 1
+        }
+
+        if (currentLocationRequest != null &&
+                (currentLocationRequest!!.priority != locationRequest.priority ||
+                        currentLocationRequest!!.numUpdates != locationRequest.numUpdates ||
+                        currentLocationRequest!!.interval != locationRequest.interval ||
+                        currentLocationRequest!!.fastestInterval != locationRequest.fastestInterval)) {
+            locationProviderClient.removeLocationUpdates(locationCallback)
+        }
+
+        currentLocationRequest = locationRequest
+
+        if (!isPaused) {
+            locationProviderClient.requestLocationUpdates(locationRequest!!, locationCallback, null)
+        }
+    }
+
+    private suspend fun currentLocation(): Boolean {
+        val result = try {
+            val availability = locationAvailability()
+            if (availability.isLocationAvailable) {
+                val location = lastLocation()
+                if (location != null) {
+                    Result.success(arrayOf(LocationData.from(location)))
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Result.failure(Result.Error.Type.Runtime, message = e.message)
+        }
+
+        if (result != null) {
+            onLocationUpdatesResult(result)
+        }
+
+        return result != null
     }
 
 
@@ -220,20 +284,6 @@ class LocationClient(private val activity: Activity) {
 
 
     // Location helpers
-
-    private fun getBestRequestedPriority(): Int {
-        check(locationUpdatesRequests.isNotEmpty(), { "no requests to getBestRequestedPriority()" })
-
-        return locationUpdatesRequests.map { it.accuracy.android.androidValue }
-                .sortedWith(Comparator { o1, o2 ->
-                    when (o1) {
-                        o2 -> 0
-                        LocationHelper.getBestPriority(o1, o2) -> 1
-                        else -> -1
-                    }
-                })
-                .first()
-    }
 
     private suspend fun locationAvailability(): LocationAvailability = suspendCoroutine { cont ->
         locationProviderClient.locationAvailability
