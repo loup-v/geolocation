@@ -3,6 +3,14 @@
 
 part of geolocation;
 
+/// Contains the result from a binary (success or failed) request.
+///
+/// [isSuccessful] means the request was successful.
+/// Otherwise, [error] will contain more details.
+///
+/// See also:
+///
+///  * [GeolocationResultError], which contains details on why/what failed.
 class GeolocationResult {
   GeolocationResult._(
     this.isSuccessful,

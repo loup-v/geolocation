@@ -42,7 +42,11 @@ class _TabTrackState extends State<TabTrack> {
 
       _subscriptionStartedTimestamp = new DateTime.now().millisecondsSinceEpoch;
       _subscription = Geolocation
-          .locationUpdates(accuracy: LocationAccuracy.best)
+          .locationUpdates(
+        accuracy: LocationAccuracy.best,
+        displacementFilter: 0.0,
+        inBackground: false,
+      )
           .listen((result) {
         final location = new _LocationData(
           result: result,
