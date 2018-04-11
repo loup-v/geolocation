@@ -31,11 +31,11 @@ public class SwiftGeolocationPlugin: NSObject, FlutterPlugin, UIApplicationDeleg
   // UIApplicationDelegate
   
   public func applicationDidBecomeActive(_ application: UIApplication) {
-    
+    locationClient.resume()
   }
   
   public func applicationWillResignActive(_ application: UIApplication) {
-    
+    locationClient.pause()
   }
 }
 

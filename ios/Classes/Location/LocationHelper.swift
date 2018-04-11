@@ -9,7 +9,7 @@ import CoreLocation
 struct LocationHelper {
   
   // Accuracies ordered from lowest to highest
-  // Might not be needed if double values are already ordered in linear manner
+  // Might not be needed if constant values are already ordered by asc/desc order
   private static let accuracies = [kCLLocationAccuracyThreeKilometers,
                                        kCLLocationAccuracyKilometer,
                                        kCLLocationAccuracyHundredMeters,

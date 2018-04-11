@@ -10,8 +10,18 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   
   private let locationManager = CLLocationManager()
   private var permissionCallbacks: Array<Callback<Void, Void>> = []
+  
   private var locationUpdatesCallback: LocationUpdatesCallback? = nil
   private var locationUpdatesRequests: Array<LocationUpdatesRequest> = []
+  
+  private var hasLocationRequest: Bool {
+    return !locationUpdatesRequests.isEmpty
+  }
+  private var hasInBackgroundLocationRequest: Bool {
+    return !locationUpdatesRequests.filter { $0.inBackground == true }.isEmpty
+  }
+  
+  private var isPaused = false
   
   override init() {
     super.init()
@@ -22,12 +32,12 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   // One shot API
   
   func isLocationOperational() -> Result<Bool> {
-    let status: ServiceStatus<Bool> = checkServiceStatus()
+    let status: ServiceStatus<Bool> = currentServiceStatus()
     return status.isReady ? Result<Bool>.success(with: true) : status.failure!
   }
   
   func requestLocationPermission(_ callback: @escaping (Result<Bool>) -> Void) {
-    runWithLocationService(success: {
+    runWithValidServiceStatus(success: {
       callback(Result<Bool>.success(with: true))
     }, failure: { result in
       callback(result)
@@ -35,7 +45,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   func lastKnownLocation(_ callback: @escaping (Result<[Location]>) -> Void) {
-    runWithLocationService(success: {
+    runWithValidServiceStatus(success: {
       if let location = self.locationManager.location {
         callback(Result<Location>.success(with: [Location(from: location)]))
       } else {
@@ -45,39 +55,24 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   
-  // Location Updates API
+  // Updates API
   
   func addLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
-    runWithLocationService(success: {
-      let isAnyRequestRunning = !self.locationUpdatesRequests.isEmpty
-      let isContinuousRequestRunning = !self.locationUpdatesRequests.filter { $0.strategy == .continuous }.isEmpty
-      
+    runWithValidServiceStatus(success: {
       self.locationUpdatesRequests.append(request)
-      
-      if isAnyRequestRunning {
-        self.updateLocationRequestsAccuracy()
-        self.locationManager.stopUpdatingLocation()
-      } else {
-        self.locationManager.desiredAccuracy = request.accuracy.ios.clValue
-      }
-      
-      if isContinuousRequestRunning || request.strategy == .continuous {
-        self.locationManager.startUpdatingLocation()
-      } else {
-        self.locationManager.requestLocation()
-      }
+      self.updateRunningRequest()
     }, failure: { result in
       self.locationUpdatesCallback!(result)
     })
   }
   
   func removeLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
-    let index = self.locationUpdatesRequests.index(where: { $0.id == request.id })
-    if let index = index {
-      self.locationUpdatesRequests.remove(at: index)
+    guard let index = locationUpdatesRequests.index(where: { $0.id == request.id }) else {
+      return
     }
     
-    self.updateLocationRequestsAccuracy()
+    locationUpdatesRequests.remove(at: index)
+    updateRunningRequest()
   }
   
   func registerLocationUpdates(callback: @escaping LocationUpdatesCallback) {
@@ -91,23 +86,66 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   
-  // Helpers
+  // Lifecycle API
   
-  private func updateLocationRequestsAccuracy() {
-    guard !locationUpdatesRequests.isEmpty else {
+  func resume() {
+    guard hasLocationRequest && isPaused else {
       return
     }
     
-    let bestRequestedAccuracy = locationUpdatesRequests.max(by: {
+    isPaused = false
+    startLocation()
+  }
+  
+  func pause() {
+    guard hasLocationRequest && !isPaused && !hasInBackgroundLocationRequest else {
+      return
+    }
+    
+    isPaused = true
+    locationManager.stopUpdatingLocation()
+  }
+  
+  
+  // Location updates logic
+  
+  private func updateRunningRequest() {
+    guard !locationUpdatesRequests.isEmpty else {
+      isPaused = false
+      locationManager.stopUpdatingLocation()
+      return
+    }
+    
+    locationManager.desiredAccuracy = locationUpdatesRequests.max(by: {
       let best = LocationHelper.betterAccuracy(between: $0.accuracy.ios.clValue, and: $1.accuracy.ios.clValue)
       return best == $0.accuracy.ios.clValue
     })!.accuracy.ios.clValue
     
-    locationManager.desiredAccuracy = bestRequestedAccuracy
+    let distanceFilter = locationUpdatesRequests.map { $0.displacementFilter }.min()!
+    locationManager.distanceFilter = distanceFilter > 0 ? distanceFilter : kCLDistanceFilterNone
+    
+    locationManager.stopUpdatingLocation()
+    
+    if !isPaused {
+      startLocation()
+    }
   }
   
-  private func runWithLocationService<T>(success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
-    let status: ServiceStatus<T> = checkServiceStatus()
+  private func startLocation() {
+    let isContinuousUpdatesRequested = !self.locationUpdatesRequests.filter { $0.strategy == .continuous }.isEmpty
+    
+    if isContinuousUpdatesRequested {
+      locationManager.startUpdatingLocation()
+    } else {
+      locationManager.requestLocation()
+    }
+  }
+  
+  
+  // Service status
+  
+  private func runWithValidServiceStatus<T>(success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
+    let status: ServiceStatus<T> = currentServiceStatus()
     
     if status.isReady {
       success()
@@ -125,7 +163,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     }
   }
   
-  private func checkServiceStatus<T>() -> ServiceStatus<T> {
+  private func currentServiceStatus<T>() -> ServiceStatus<T> {
     guard CLLocationManager.locationServicesEnabled() else {
       return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .serviceDisabled))
     }

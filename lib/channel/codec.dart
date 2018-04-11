@@ -61,8 +61,8 @@ class _JsonCodec {
         json['isSuccessful'],
         json['error'] != null ? resultErrorFromJson(json['error']) : null,
         json['data'] != null
-            ? (json['data'] as List<Map<String, dynamic>>)
-                .map((it) => locationFromJson(it))
+            ? (json['data'] as List<dynamic>)
+                .map((it) => locationFromJson(it as Map<String, dynamic>))
                 .toList()
             : null,
       );

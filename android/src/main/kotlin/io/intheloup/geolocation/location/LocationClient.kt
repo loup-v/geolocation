@@ -37,11 +37,16 @@ class LocationClient(private val activity: Activity) {
     }
 
 
-    private val locationProviderClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
+    private val providerClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
     private val permissionCallbacks = ArrayList<Callback<Unit, Unit>>()
-    private val locationUpdatesRequests = ArrayList<LocationUpdatesRequest>()
+
     private var locationUpdatesCallback: ((Result) -> Unit)? = null
+    private val locationUpdatesRequests = ArrayList<LocationUpdatesRequest>()
     private var currentLocationRequest: LocationRequest? = null
+
+    private val hasLocationRequest get() = currentLocationRequest != null
+    private val hasInBackgroundLocationRequest get() = locationUpdatesRequests.any { it.inBackground }
+
     private var isPaused = false
 
     private val locationCallback: LocationCallback = object : LocationCallback() {
@@ -53,7 +58,7 @@ class LocationClient(private val activity: Activity) {
 
     // One shot API
 
-    suspend fun isLocationOperational(): Result {
+    fun isLocationOperational(): Result {
         val status = currentServiceStatus()
         return if (status.isReady) {
             Result.success(true)
@@ -123,25 +128,25 @@ class LocationClient(private val activity: Activity) {
     // Lifecycle API
 
     fun resume() {
-        if (currentLocationRequest == null || !isPaused) {
+        if (!hasLocationRequest || !isPaused) {
             return
         }
 
         isPaused = false
-        locationProviderClient.requestLocationUpdates(currentLocationRequest!!, locationCallback, null)
+        startLocation()
     }
 
     fun pause() {
-        if (currentLocationRequest == null || isPaused || locationUpdatesRequests.any { it.inBackground }) {
+        if (!hasLocationRequest || isPaused || hasInBackgroundLocationRequest) {
             return
         }
 
         isPaused = true
-        locationProviderClient.removeLocationUpdates(locationCallback)
+        providerClient.removeLocationUpdates(locationCallback)
     }
 
 
-    // Location updates
+    // Location updates logic
 
     private fun onLocationUpdatesResult(result: Result) {
         locationUpdatesCallback?.invoke(result)
@@ -151,7 +156,7 @@ class LocationClient(private val activity: Activity) {
         if (locationUpdatesRequests.isEmpty()) {
             currentLocationRequest = null
             isPaused = false
-            locationProviderClient.removeLocationUpdates(locationCallback)
+            providerClient.removeLocationUpdates(locationCallback)
             return
         }
 
@@ -163,7 +168,6 @@ class LocationClient(private val activity: Activity) {
         }
 
         val locationRequest = LocationRequest.create()
-        locationRequest.setExpirationDuration(30000)
 
         locationRequest.priority = locationUpdatesRequests.map { it.accuracy.android.androidValue }
                 .sortedWith(Comparator { o1, o2 ->
@@ -184,19 +188,20 @@ class LocationClient(private val activity: Activity) {
             locationRequest.numUpdates = 1
         }
 
-        if (currentLocationRequest != null &&
-                (currentLocationRequest!!.priority != locationRequest.priority ||
-                        currentLocationRequest!!.numUpdates != locationRequest.numUpdates ||
-                        currentLocationRequest!!.interval != locationRequest.interval ||
-                        currentLocationRequest!!.fastestInterval != locationRequest.fastestInterval)) {
-            locationProviderClient.removeLocationUpdates(locationCallback)
+        if (currentLocationRequest != null) {
+            providerClient.removeLocationUpdates(locationCallback)
         }
 
         currentLocationRequest = locationRequest
 
         if (!isPaused) {
-            locationProviderClient.requestLocationUpdates(locationRequest!!, locationCallback, null)
+            startLocation()
         }
+    }
+
+    private fun startLocation() {
+        currentLocationRequest!!.setExpirationDuration(30000)
+        providerClient.requestLocationUpdates(currentLocationRequest!!, locationCallback, null)
     }
 
     private suspend fun currentLocation(): Boolean {
@@ -286,13 +291,13 @@ class LocationClient(private val activity: Activity) {
     // Location helpers
 
     private suspend fun locationAvailability(): LocationAvailability = suspendCoroutine { cont ->
-        locationProviderClient.locationAvailability
+        providerClient.locationAvailability
                 .addOnSuccessListener { cont.resume(it) }
                 .addOnFailureListener { cont.resumeWithException(it) }
     }
 
     private suspend fun lastLocation(): Location? = suspendCoroutine { cont ->
-        locationProviderClient.lastLocation
+        providerClient.lastLocation
                 .addOnSuccessListener { location: Location? -> cont.resume(location) }
                 .addOnFailureListener { cont.resumeWithException(it) }
     }

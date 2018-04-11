@@ -22,9 +22,7 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
     }
 
     private fun isLocationOperational(result: MethodChannel.Result) {
-        launch(UI) {
-            result.success(Codec.encodeResult(locationClient.isLocationOperational()))
-        }
+        result.success(Codec.encodeResult(locationClient.isLocationOperational()))
     }
 
     private fun requestLocationPermission(result: MethodChannel.Result) {
