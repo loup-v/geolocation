@@ -39,12 +39,13 @@ class Geolocation {
       _locationChannel.isLocationOperational();
 
   /// Requests the location permission, if needed.
+  ///
   /// If location permission is already granted, it returns successfully.
   /// If location is not operational, the request will fail without asking the permission.
   ///
   /// You don't need to call this method manually.
-  /// Every [Geolocation] location-related method will request the permission automatically if needed.
-  /// However it's a common practice to request the permission early in the application flow (eg. on boarding).
+  /// Every [Geolocation] method requiring the location permission will request it automatically if needed.
+  /// However it's a common practice to request the permission early in the application flow (like during an on boarding flow).
   ///
   /// Behaviour per platform:
   ///
@@ -52,7 +53,7 @@ class Geolocation {
   ///  * iOS: Requests `when in use` or `always` location permission, depending on what description is provided in `Infos.plist`.
   ///
   /// If required declaration is missing in `AndroidManifest.xml` or in `Infos.plist`, location will not work.
-  /// Plugin will throw a [GeolocationException] to help you catch this mistake.
+  /// Throws a [GeolocationException] if missing, to help you catch this mistake.
   ///
   /// See also:
   ///
@@ -62,26 +63,27 @@ class Geolocation {
 
   /// Retrieves the most recent [Location] currently available.
   ///
-  /// It does not wait for the device to fetch a new location, and returns immediately the last cached location, if available.
+  /// It does not request the device to fetch a new location, but returns the last cached location.
+  /// Location is not guaranteed to be available, and request will fail with [GeolocationResultErrorType.locationNotFound] otherwise.
   /// This method is reliable to get a one-shot current location on Android, but not so much on iOS.
   ///
   /// See also:
   ///
-  ///  * Behaviour on Android: <https://developer.android.com/training/location/retrieve-current.html>
-  ///  * Behaviour on iOS: <https://developer.apple.com/documentation/corelocation/cllocationmanager/1423687-location>
   ///  * [currentLocation], which provides a better way to get the current one-shot location on both platforms.
   ///  * [LocationResult], the result you can expect from this request.
+  ///  * Android behaviour: <https://developer.android.com/training/location/retrieve-current.html>
+  ///  * iOS behaviour: <https://developer.apple.com/documentation/corelocation/cllocationmanager/1423687-location>
   static Future<LocationResult> get lastKnownLocation =>
       _locationChannel.lastKnownLocation();
 
   /// Requests a single [Location] update.
   ///
-  /// Device will try to match the requested [accuracy], but it can also return a less accurate [Location] as fallback.
+  /// The location service will try to match the requested [accuracy], but it can also return a less accurate [Location] as fallback.
   ///
   /// By default, location requests are stopped when app goes to background, and resumed when app comes back to foreground.
   /// You can disable this behaviour by setting `true` for [inBackground].
   ///
-  /// A single [LocationResult] will be pushed down the stream, then the stream will complete.
+  /// A single [LocationResult] will be pushed down the stream, and the stream will complete.
   /// To stop the ongoing location request, cancel the subscription.
   ///
   /// If no location is retrieved after some time (30 seconds on Android, ~10 seconds on iOS), the request will timeout and complete.
@@ -89,10 +91,10 @@ class Geolocation {
   ///
   /// See also:
   ///
-  ///  * Behaviour on Android: <https://developer.android.com/training/location/receive-location-updates.html>
-  ///  * Behaviour on iOS: <https://developer.apple.com/documentation/corelocation/cllocationmanager/1620548-requestlocation>
   ///  * [currentLocation], which provides a better way to get the current one-shot location on both platforms.
   ///  * [LocationResult], the result you can expect from this request.
+  ///  * Android behaviour: <https://developer.android.com/training/location/receive-location-updates.html>
+  ///  * iOS behaviour: <https://developer.apple.com/documentation/corelocation/cllocationmanager/1620548-requestlocation>
   static Stream<LocationResult> singleLocationUpdate({
     @required LocationAccuracy accuracy,
     bool inBackground = false,
@@ -105,12 +107,12 @@ class Geolocation {
 
   /// Requests the current "one-shot" [Location], using Android and iOS best practice mechanics.
   ///
-  /// Device will try to match the requested [accuracy], but it can also return a less accurate [Location] as fallback.
+  /// The location service will try to match the requested [accuracy], but it can also return a less accurate [Location] as fallback.
   ///
   /// By default, location requests are stopped when app goes to background, and resumed when app comes back to foreground.
   /// You can disable this behaviour by setting `true` for [inBackground].
   ///
-  /// A single [LocationResult] will be pushed down the stream, then the stream will complete.
+  /// A single [LocationResult] will be pushed down the stream, and the stream will complete.
   /// To stop the ongoing location request, cancel the subscription.
   ///
   /// Behaviour per platform:
@@ -134,6 +136,23 @@ class Geolocation {
         inBackground,
       ));
 
+  /// Requests continuous [Location] updates.
+  ///
+  /// The location service will try to match the requested [accuracy], but it can also return a less accurate [Location] as fallback.
+  ///
+  /// Filter minimum [displacementFilter] distance in meters between each [Location] updates.
+  ///
+  /// By default, location requests are stopped when app goes to background, and resumed when app comes back to foreground.
+  /// You can disable this behaviour by setting `true` for [inBackground].
+  ///
+  /// [LocationResult] will be pushed down the stream continuously until the subscription is cancelled.
+  /// To stop the ongoing location request, cancel the subscription.
+  ///
+  /// See also:
+  ///
+  ///  * [LocationResult], the result you can expect from this request.
+  ///  * Android behaviour: <https://developer.android.com/training/location/receive-location-updates.html>
+  ///  * iOS behaviour: <https://developer.apple.com/documentation/corelocation/cllocationmanager/1423750-startupdatinglocation>
   static Stream<LocationResult> locationUpdates({
     @required LocationAccuracy accuracy,
     double displacementFilter = 0.0,

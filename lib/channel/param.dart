@@ -5,7 +5,13 @@ part of geolocation;
 
 class _LocationUpdatesRequest {
   _LocationUpdatesRequest(
-      this.strategy, this.accuracy, this.inBackground, [this.displacementFilter = 0.0]);
+    this.strategy,
+    this.accuracy,
+    this.inBackground, [
+    this.displacementFilter = 0.0,
+  ]) {
+    assert(displacementFilter >= 0.0);
+  }
 
   int id;
   final _LocationUpdateStrategy strategy;
