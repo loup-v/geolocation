@@ -1,6 +1,8 @@
 # Geolocation
 
-Flutter geolocation plugin working on Android API 16+ and iOS 9+.  
+[![pub package](https://img.shields.io/pub/v/geolocation.svg)](https://pub.dartlang.org/packages/geolocation)
+
+Flutter [geolocation plugin](https://pub.dartlang.org/packages/geolocation/) working on Android API 16+ and iOS 9+.  
 
 Features:
 
@@ -123,7 +125,7 @@ if(result.isSuccessful) {
 
 ### Get the current location
 
-See api documentation: [link]
+See api documentation: https://pub.dartlang.org/documentation/geolocation/
 
 ```dart
 LocationResult result = await Geolocation.currentLocation(LocationAccuracy.best);
@@ -132,7 +134,7 @@ LocationResult result = await Geolocation.currentLocation(LocationAccuracy.best)
 
 ### Get a single location update
 
-See api documentation: [link]
+See api documentation: https://pub.dartlang.org/documentation/geolocation/
 
 ```dart
 LocationResult result = await Geolocation.singleLocationUpdate(LocationAccuracy.best);
