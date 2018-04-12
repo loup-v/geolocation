@@ -34,9 +34,9 @@ class _TabSettingsState extends State<TabSettings> {
   _requestLocationPermissionPressed() async {
     final GeolocationResult result =
         await Geolocation.requestLocationPermission(const LocationPermission(
-          android: LocationPermissionAndroid.fine,
-          ios: LocationPermissionIOS.always,
-        ));
+      android: LocationPermissionAndroid.fine,
+      ios: LocationPermissionIOS.always,
+    ));
     if (mounted) {
       setState(() {
         _requestPermissionResult = result;
