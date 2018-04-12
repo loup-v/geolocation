@@ -71,7 +71,7 @@ You need to declare the description for the desired permission in `ios/Runner/In
 There are two kinds of location permission in Android: "coarse" and "fine".
 Coarse location will allow to get approximate location based on sensors like the Wifi, while fine location returns the most accurate location using GPS (in addition to coarse).
 
-You need to declare one of the two permissions in `AndroidManifest.xml`:
+You need to declare one of the two permissions in `android/app/src/main/AndroidManifest.xml`:
 
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
@@ -88,6 +88,8 @@ Note that `ACCESS_FINE_LOCATION` permission includes `ACCESS_COARSE_LOCATION`.
 
 For more complete documentation on all usage, check the API documentation:  
 https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/geolocation-library.html
+
+You can also check the example project that showcase a comprehensive usage of Geolocation plugin.
 
 ### Check if location service is operational
 
@@ -140,7 +142,7 @@ https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation
 
 ```dart
 // best option for most cases
-Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
+StreamSubscription<LocationResult> subscription = Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
   if(result.isSuccessful) {
     Double latitude = result.location.latitude;
     // todo with result
@@ -148,13 +150,34 @@ Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
 });
 
 // force a single location update
-Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
+StreamSubscription<LocationResult> subscription = Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
   // todo with result
 });
 
 // get last known location, which is a future rather than a stream
 LocationResult result = await Geolocation.lastKnownLocation();
+```
 
+
+### Continuous location updates
+
+API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/locationUpdates.html
+
+```dart
+StreamSubscription<LocationResult> subscription = Geolocation.locationUpdates(
+    accuracy: LocationAccuracy.best,
+    displacementFilter: 10.0, // in meters
+    inBackground: true, // by default, location updates will pause when app is inactive (in background). Set to `true` to continue updates in background. 
+  )
+  .listen((result) {
+    if(result.isSuccessful) {
+      // todo with result
+    }
+  });
+
+
+// cancelling subscription will also stop the ongoing location request
+subscription.cancel();
 ```
 
 
