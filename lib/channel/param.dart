@@ -20,8 +20,6 @@ class _LocationUpdatesRequest {
   final LocationAccuracy accuracy;
   final bool inBackground;
   final double displacementFilter;
-
-
 }
 
 enum _LocationUpdateStrategy { current, single, continuous }

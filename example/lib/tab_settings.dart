@@ -32,7 +32,8 @@ class _TabSettingsState extends State<TabSettings> {
   }
 
   _requestLocationPermissionPressed() async {
-    final GeolocationResult result = await Geolocation.requestLocationPermission();
+    final GeolocationResult result =
+        await Geolocation.requestLocationPermission();
     if (mounted) {
       setState(() {
         _requestPermissionResult = result;

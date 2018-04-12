@@ -103,6 +103,4 @@ class _JsonCodec {
         'displacementFilter': request.displacementFilter,
         'inBackground': request.inBackground,
       };
-
-
 }

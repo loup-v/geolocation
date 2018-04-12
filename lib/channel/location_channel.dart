@@ -30,22 +30,27 @@ class _LocationChannel {
   // Every data from channel stream will be forwarded to the subscriptions
   List<_LocationUpdatesSubscription> _locationUpdatesSubscriptions = [];
 
-  Future<GeolocationResult> isLocationOperational(LocationPermission permission) async {
-    final response = await _invokeChannelMethod(
-        _loggingTag, _channel, 'isLocationOperational', _Codec.encodeLocationPermission(permission));
+  Future<GeolocationResult> isLocationOperational(
+      LocationPermission permission) async {
+    final response = await _invokeChannelMethod(_loggingTag, _channel,
+        'isLocationOperational', _Codec.encodeLocationPermission(permission));
     return _Codec.decodeResult(response);
   }
 
   Future<GeolocationResult> requestLocationPermission(
       LocationPermission permission) async {
     final response = await _invokeChannelMethod(
-        _loggingTag, _channel, 'requestLocationPermission', _Codec.encodeLocationPermission(permission));
+        _loggingTag,
+        _channel,
+        'requestLocationPermission',
+        _Codec.encodeLocationPermission(permission));
     return _Codec.decodeResult(response);
   }
 
-  Future<LocationResult> lastKnownLocation(LocationPermission permission) async {
-    final response =
-        await _invokeChannelMethod(_loggingTag, _channel, 'lastKnownLocation', _Codec.encodeLocationPermission(permission));
+  Future<LocationResult> lastKnownLocation(
+      LocationPermission permission) async {
+    final response = await _invokeChannelMethod(_loggingTag, _channel,
+        'lastKnownLocation', _Codec.encodeLocationPermission(permission));
     return _Codec.decodeLocationResult(response);
   }
 
