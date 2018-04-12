@@ -29,8 +29,8 @@ class Location {
 ///
 /// See also:
 ///
-///  * [LocationPriorityAndroid], to which this accuracy defers on Android.
-///  * [LocationAccuracyIOS], to which this accuracy defers on iOS.
+///  * [LocationPriorityAndroid], to which this defers for Android.
+///  * [LocationAccuracyIOS], to which this defers for iOS.
 class LocationAccuracy {
   /// In case the common ground constants are not satisfactory, you can build a custom [LocationAccuracy]
   /// using specific platform values.

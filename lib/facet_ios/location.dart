@@ -3,8 +3,9 @@
 
 part of geolocation;
 
-/// iOS values for [LocationAccuracy]
-/// See: <https://developer.apple.com/documentation/corelocation/cllocationaccuracy>
+/// iOS values for [LocationAccuracy].
+///
+/// Documentation: <https://developer.apple.com/documentation/corelocation/cllocationaccuracy>
 enum LocationAccuracyIOS {
   threeKilometers,
   kilometer,

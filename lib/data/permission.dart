@@ -7,8 +7,8 @@ part of geolocation;
 ///
 /// See also:
 ///
-///  * Android permissions description: <https://developer.android.com/training/location/retrieve-current.html#permissions>
-///  * iOS permissions description: <https://developer.apple.com/documentation/corelocation/choosing_the_authorization_level_for_location_services>
+///  * [LocationPermissionAndroid], to which this defers for Android.
+///  * [LocationPermissionIOS], to which this defers for iOS.
 class LocationPermission {
   const LocationPermission({
     this.android = LocationPermissionAndroid.fine,

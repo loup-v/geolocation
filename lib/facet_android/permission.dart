@@ -3,4 +3,7 @@
 
 part of geolocation;
 
+/// Android values for [LocationPermission].
+///
+/// Documentation: <https://developer.android.com/training/location/retrieve-current.html#permissions>
 enum LocationPermissionAndroid { fine, coarse }
