@@ -30,21 +30,22 @@ class _LocationChannel {
   // Every data from channel stream will be forwarded to the subscriptions
   List<_LocationUpdatesSubscription> _locationUpdatesSubscriptions = [];
 
-  Future<GeolocationResult> isLocationOperational() async {
+  Future<GeolocationResult> isLocationOperational(LocationPermission permission) async {
     final response = await _invokeChannelMethod(
-        _loggingTag, _channel, 'isLocationOperational');
+        _loggingTag, _channel, 'isLocationOperational', _Codec.encodeLocationPermission(permission));
     return _Codec.decodeResult(response);
   }
 
-  Future<GeolocationResult> requestLocationPermission() async {
+  Future<GeolocationResult> requestLocationPermission(
+      LocationPermission permission) async {
     final response = await _invokeChannelMethod(
-        _loggingTag, _channel, 'requestLocationPermission');
+        _loggingTag, _channel, 'requestLocationPermission', _Codec.encodeLocationPermission(permission));
     return _Codec.decodeResult(response);
   }
 
-  Future<LocationResult> lastKnownLocation() async {
+  Future<LocationResult> lastKnownLocation(LocationPermission permission) async {
     final response =
-        await _invokeChannelMethod(_loggingTag, _channel, 'lastKnownLocation');
+        await _invokeChannelMethod(_loggingTag, _channel, 'lastKnownLocation', _Codec.encodeLocationPermission(permission));
     return _Codec.decodeLocationResult(response);
   }
 
@@ -102,7 +103,8 @@ class _LocationChannel {
             _Codec.encodeLocationUpdatesRequest(request));
       },
       onCancel: () async {
-        _log('remove location updates request [id=${subscriptionWithRequest.request
+        _log('remove location updates request [id=${subscriptionWithRequest
+            .request
             .id}]');
         subscriptionWithRequest.subscription.cancel();
 

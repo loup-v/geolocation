@@ -2,22 +2,21 @@
 
 [![pub package](https://img.shields.io/pub/v/geolocation.svg)](https://pub.dartlang.org/packages/geolocation)
 
-Flutter [geolocation plugin](https://pub.dartlang.org/packages/geolocation/) working on Android API 16+ and iOS 9+.  
+Flutter [geolocation plugin](https://pub.dartlang.org/packages/geolocation/) for Android API 16+ and iOS 9+.  
 
 Features:
 
-* Automatically request location permission
-* Retrieve current device location
-* Listen to location changes
-* Common API with different logic under the hood for iOS and Android, in order to follow best practices on both platforms 
+* Manual and automatic location permission management
+* Current one-shot location
+* Continuous location updates with foreground and background options 
 
 The plugin is under active development and the following features are planned soon:
 
-* Foreground and background strategies for location changes
 * Geocode
 * Geofences
 * Place suggestions
 * Activity recognition
+* Exposition of iOS/Android specific APIs (like significant location updates on iOS)
 
 
 Android | iOS
@@ -31,32 +30,29 @@ Add geolocation to your pubspec.yaml:
 
 ```yaml
 dependencies:
-  geolocation: ^0.1.1
+  geolocation: ^0.2.0
 ```
 
 **Note:** There is a known issue for integrating swift written plugin into Flutter project created with Objective-C template.
-See [#16049](https://github.com/flutter/flutter/issues/16049) for help on integration. 
+See issue [Flutter#16049](https://github.com/flutter/flutter/issues/16049) for help on integration. 
 
 
-## Permission
+### Permission
 
-Apps need to declare the location usage in configuration file and request it at runtime.
-Geolocation plugin automatically checks at runtime if the configuration is correct.
-In case you forget, the plugin will throw a shiny exception to get you notified ASAP. 
+Android and iOS require to declare the location permission in a configuration file. 
 
-### iOS configuration
+#### For iOS
 
-There are two kinds of location permission in iOS: "when in use" and "always".
-You will request one or another depending if the app requires to use location while being in background.
-You need to specify the description for the desired permission in `Infos.plist`.
+There are two kinds of location permission available in iOS: "when in use" (only when app is in foreground) and "always" (foreground and background).
+You must specify the description for the desired permission in `Info.plist`.
 
-**When targeting iOS 9/10**: `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription`
+**For iOS 9/10**: `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription`
 
-**When targeting iOS 11+**: `NSLocationAlwaysAndWhenInUseUsageDescription` or `NSLocationWhenInUseUsageDescription`
+**For iOS 11+**: `NSLocationAlwaysAndWhenInUseUsageDescription` or `NSLocationWhenInUseUsageDescription`
 
 Geolocation automatically requests the associated permission at runtime, based on the content of `Infos.plist`.
 
-### Android configuration
+### For Android
 
 There are two kinds of location permission in Android: "coarse" and "fine".
 Coarse location will allow to get approximate location based on sensors like the Wifi, while fine location returns the most accurate location using GPS (in addition to coarse).

@@ -10,18 +10,19 @@ import android.os.Build
 import android.provider.Settings
 import android.support.v4.content.ContextCompat
 import com.google.android.gms.location.LocationRequest
+import io.intheloup.geolocation.data.Permission
 
 object LocationHelper {
 
-    fun getLocationPermissionRequest(context: Context): LocationPermissionRequest {
+    fun isPermissionDeclared(context: Context, permission: Permission): Boolean {
         val permissions = context.packageManager
                 .getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
                 .requestedPermissions
 
         return when {
-            permissions.count { it == Manifest.permission.ACCESS_FINE_LOCATION } > 0 -> LocationPermissionRequest.Fine
-            permissions.count { it == Manifest.permission.ACCESS_COARSE_LOCATION } > 0 -> LocationPermissionRequest.Coarse
-            else -> LocationPermissionRequest.Undefined
+            permissions.count { it == Manifest.permission.ACCESS_FINE_LOCATION } > 0 -> true
+            permissions.count { it == Manifest.permission.ACCESS_COARSE_LOCATION } > 0 && permission == Permission.Coarse -> true
+            else -> false
         }
     }
 
@@ -53,9 +54,5 @@ object LocationHelper {
         p1 == LocationRequest.PRIORITY_NO_POWER -> p1
         p2 == LocationRequest.PRIORITY_NO_POWER -> p2
         else -> throw IllegalArgumentException("Unknown priority: $p1 vs $p2")
-    }
-
-    enum class LocationPermissionRequest {
-        Undefined, Coarse, Fine
     }
 }

@@ -23,7 +23,7 @@ class _TabSettingsState extends State<TabSettings> {
   }
 
   _isLocationOperationalPressed() async {
-    final GeolocationResult result = await Geolocation.isLocationOperational;
+    final GeolocationResult result = await Geolocation.isLocationOperational();
     if (mounted) {
       setState(() {
         _locationOperationalResult = result;

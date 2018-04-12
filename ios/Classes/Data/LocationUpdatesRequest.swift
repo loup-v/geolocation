@@ -7,14 +7,12 @@ import Foundation
 
 struct LocationUpdatesRequest: Codable {
   let id: Int
+  
   let strategy: Strategy
-  let accuracy: Facet
+  let permission: Permission
+  let accuracy: Accuracy
   let displacementFilter: Double
   let inBackground: Bool
-  
-  struct Facet: Codable {
-    let ios: Accuracy
-  }
   
   enum Strategy: String, Codable {
     case current = "current"

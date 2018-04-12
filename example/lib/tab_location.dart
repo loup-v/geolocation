@@ -27,7 +27,7 @@ class _TabLocationState extends State<TabLocation> {
 
   _onLastKnownPressed() async {
     final int id = _createLocation('last known', Colors.blueGrey);
-    LocationResult result = await Geolocation.lastKnownLocation;
+    LocationResult result = await Geolocation.lastKnownLocation();
     if (mounted) {
       _updateLocation(id, result);
     }

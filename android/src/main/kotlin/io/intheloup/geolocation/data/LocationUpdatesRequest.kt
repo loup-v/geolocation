@@ -9,11 +9,11 @@ import com.squareup.moshi.ToJson
 
 class LocationUpdatesRequest(val id: Int,
                              val strategy: Strategy,
-                             val accuracy: Facet,
+                             val permission: Permission,
+                             val accuracy: Priority,
                              val inBackground: Boolean,
                              val displacementFilter: Float) {
 
-    class Facet(val android: Priority)
 
     enum class Strategy {
         Current, Single, Continuous;

@@ -7,6 +7,7 @@ import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.intheloup.geolocation.data.LocationUpdatesRequest
+import io.intheloup.geolocation.data.Permission
 import io.intheloup.geolocation.location.LocationClient
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
@@ -21,19 +22,19 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
         eventChannel.setStreamHandler(this)
     }
 
-    private fun isLocationOperational(result: MethodChannel.Result) {
-        result.success(Codec.encodeResult(locationClient.isLocationOperational()))
+    private fun isLocationOperational(permission: Permission, result: MethodChannel.Result) {
+        result.success(Codec.encodeResult(locationClient.isLocationOperational(permission)))
     }
 
-    private fun requestLocationPermission(result: MethodChannel.Result) {
+    private fun requestLocationPermission(permission: Permission, result: MethodChannel.Result) {
         launch(UI) {
-            result.success(Codec.encodeResult(locationClient.requestLocationPermission()))
+            result.success(Codec.encodeResult(locationClient.requestLocationPermission(permission)))
         }
     }
 
-    private fun lastKnownLocation(result: MethodChannel.Result) {
+    private fun lastKnownLocation(permission: Permission, result: MethodChannel.Result) {
         launch(UI) {
-            result.success(Codec.encodeResult(locationClient.lastKnownLocation()))
+            result.success(Codec.encodeResult(locationClient.lastKnownLocation(permission)))
         }
     }
 
@@ -54,9 +55,9 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
-            "isLocationOperational" -> isLocationOperational(result)
-            "requestLocationPermission" -> requestLocationPermission(result)
-            "lastKnownLocation" -> lastKnownLocation(result)
+            "isLocationOperational" -> isLocationOperational(Codec.decodePermission(call.arguments), result)
+            "requestLocationPermission" -> requestLocationPermission(Codec.decodePermission(call.arguments), result)
+            "lastKnownLocation" -> lastKnownLocation(Codec.decodePermission(call.arguments), result)
             "addLocationUpdatesRequest" -> addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(call.arguments))
             "removeLocationUpdatesRequest" -> removeLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(call.arguments))
             else -> result.notImplemented()

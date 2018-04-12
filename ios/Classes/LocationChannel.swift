@@ -27,11 +27,11 @@ class LocationChannel {
   private func handleMethodCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
     case "isLocationOperational":
-      isLocationOperational(on: result)
+      isLocationOperational(permission: Codec.decodePermission(from: call.arguments), on: result)
     case "requestLocationPermission":
-      requestLocationPermission(on: result)
+      requestLocationPermission(permission: Codec.decodePermission(from: call.arguments), on: result)
     case "lastKnownLocation":
-      lastKnownLocation(on: result)
+      lastKnownLocation(permission: Codec.decodePermission(from: call.arguments), on: result)
     case "addLocationUpdatesRequest":
       addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(from: call.arguments))
     case "removeLocationUpdatesRequest":
@@ -41,28 +41,28 @@ class LocationChannel {
     }
   }
   
-  private func isLocationOperational(on flutterResult: @escaping FlutterResult) {
-    flutterResult(Codec.encode(result: locationClient.isLocationOperational()))
+  private func isLocationOperational(permission: Permission, on flutterResult: @escaping FlutterResult) {
+    flutterResult(Codec.encode(result: locationClient.isLocationOperational(with: permission)))
   }
   
-  private func requestLocationPermission(on flutterResult: @escaping FlutterResult) {
-    locationClient.requestLocationPermission { result in
+  private func requestLocationPermission(permission: Permission, on flutterResult: @escaping FlutterResult) {
+    locationClient.requestLocationPermission(with: permission) { result in
       flutterResult(Codec.encode(result: result))
     }
   }
   
-  private func lastKnownLocation(on flutterResult: @escaping FlutterResult) {
-    locationClient.lastKnownLocation { result in
+  private func lastKnownLocation(permission: Permission, on flutterResult: @escaping FlutterResult) {
+    locationClient.lastKnownLocation(with: permission) { result in
       flutterResult(Codec.encode(result: result))
     }
   }
 
   private func addLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
-    locationClient.addLocationUpdatesRequest(request)
+    locationClient.addLocationUpdates(request: request)
   }
   
   private func removeLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
-    locationClient.removeLocationUpdatesRequest(request)
+    locationClient.removeLocationUpdates(request: request)
   }
   
   

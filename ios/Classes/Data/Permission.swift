@@ -5,8 +5,7 @@
 
 import Foundation
 
-enum LocationPermissionRequest {
-  case undefined
-  case whenInUse
-  case always
+enum Permission: String, Codable {
+  case whenInUse = "whenInUse"
+  case always = "always"
 }

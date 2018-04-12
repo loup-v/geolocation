@@ -8,10 +8,11 @@ import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
 
 enum class Priority {
-    Low, Balanced, High;
+    NoPower, Low, Balanced, High;
 
     val androidValue
         get() = when (this) {
+            NoPower -> LocationRequest.PRIORITY_NO_POWER
             Low -> LocationRequest.PRIORITY_LOW_POWER
             Balanced -> LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
             High -> LocationRequest.PRIORITY_HIGH_ACCURACY

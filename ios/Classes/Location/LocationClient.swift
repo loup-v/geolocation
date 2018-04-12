@@ -31,21 +31,21 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   
   // One shot API
   
-  func isLocationOperational() -> Result<Bool> {
-    let status: ServiceStatus<Bool> = currentServiceStatus()
+  func isLocationOperational(with permission: Permission) -> Result<Bool> {
+    let status: ServiceStatus<Bool> = currentServiceStatus(with: permission)
     return status.isReady ? Result<Bool>.success(with: true) : status.failure!
   }
   
-  func requestLocationPermission(_ callback: @escaping (Result<Bool>) -> Void) {
-    runWithValidServiceStatus(success: {
+  func requestLocationPermission(with permission: Permission, _ callback: @escaping (Result<Bool>) -> Void) {
+    runWithValidServiceStatus(with: permission, success: {
       callback(Result<Bool>.success(with: true))
     }, failure: { result in
       callback(result)
     })
   }
   
-  func lastKnownLocation(_ callback: @escaping (Result<[Location]>) -> Void) {
-    runWithValidServiceStatus(success: {
+  func lastKnownLocation(with permission: Permission, _ callback: @escaping (Result<[Location]>) -> Void) {
+    runWithValidServiceStatus(with: permission, success: {
       if let location = self.locationManager.location {
         callback(Result<Location>.success(with: [Location(from: location)]))
       } else {
@@ -57,8 +57,8 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   
   // Updates API
   
-  func addLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
-    runWithValidServiceStatus(success: {
+  func addLocationUpdates(request: LocationUpdatesRequest) {
+    runWithValidServiceStatus(with: request.permission, success: {
       self.locationUpdatesRequests.append(request)
       self.updateRunningRequest()
     }, failure: { result in
@@ -66,7 +66,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     })
   }
   
-  func removeLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
+  func removeLocationUpdates(request: LocationUpdatesRequest) {
     guard let index = locationUpdatesRequests.index(where: { $0.id == request.id }) else {
       return
     }
@@ -117,9 +117,9 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     }
     
     locationManager.desiredAccuracy = locationUpdatesRequests.max(by: {
-      let best = LocationHelper.betterAccuracy(between: $0.accuracy.ios.clValue, and: $1.accuracy.ios.clValue)
-      return best == $0.accuracy.ios.clValue
-    })!.accuracy.ios.clValue
+      let best = LocationHelper.betterAccuracy(between: $0.accuracy.clValue, and: $1.accuracy.clValue)
+      return best == $0.accuracy.clValue
+    })!.accuracy.clValue
     
     let distanceFilter = locationUpdatesRequests.map { $0.displacementFilter }.min()!
     locationManager.distanceFilter = distanceFilter > 0 ? distanceFilter : kCLDistanceFilterNone
@@ -144,8 +144,8 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   
   // Service status
   
-  private func runWithValidServiceStatus<T>(success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
-    let status: ServiceStatus<T> = currentServiceStatus()
+  private func runWithValidServiceStatus<T>(with permission: Permission, success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
+    let status: ServiceStatus<T> = currentServiceStatus(with: permission)
     
     if status.isReady {
       success()
@@ -163,16 +163,15 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     }
   }
   
-  private func currentServiceStatus<T>() -> ServiceStatus<T> {
+  private func currentServiceStatus<T>(with permission: Permission) -> ServiceStatus<T> {
     guard CLLocationManager.locationServicesEnabled() else {
       return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .serviceDisabled))
     }
     
     switch CLLocationManager.authorizationStatus() {
     case .notDetermined:
-      let permission = locationManager.findRequestedPermission()
-      guard permission != .undefined else {
-        return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .runtime, message: "Missing location usage description values in plist. See readme for details.", fatal: true))
+      guard locationManager.isPermissionDeclared(for: permission) else {
+        return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .runtime, message: "Missing location usage description values in Info.plist. See readme for details.", fatal: true))
       }
       
       return ServiceStatus<T>(isReady: false, needsAuthorization: permission, failure: Result<T>.failure(of: .permissionDenied))
@@ -216,7 +215,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   
   struct ServiceStatus<T: Codable> {
     let isReady: Bool
-    let needsAuthorization: LocationPermissionRequest?
+    let needsAuthorization: Permission?
     let failure: Result<T>?
   }
 }

@@ -10,8 +10,14 @@ class _Codec {
   static LocationResult decodeLocationResult(String data) =>
       _JsonCodec.locationResultFromJson(json.decode(data));
 
+  static String encodeLocationPermission(LocationPermission permission) =>
+      platformSpecific(
+        _Codec.encodeEnum(permission.android),
+        _Codec.encodeEnum(permission.ios),
+      );
+
   static String encodeLocationUpdatesRequest(_LocationUpdatesRequest request) =>
-      json.encode(request.toJson());
+      json.encode(_JsonCodec.locationUpdatesRequestToJson(request));
 
   // see: https://stackoverflow.com/questions/49611724/dart-how-to-json-decode-0-as-double
   static double parseJsonNumber(dynamic value) {
@@ -20,6 +26,17 @@ class _Codec {
 
   static String encodeEnum(dynamic value) {
     return value.toString().split('.').last;
+  }
+
+  static String platformSpecific(String android, String ios) {
+    if (Platform.isAndroid) {
+      return android;
+    } else if (Platform.isIOS) {
+      return ios;
+    } else {
+      throw new GeolocationException(
+          'Unsupported platform: ${Platform.operatingSystem}');
+    }
   }
 }
 
@@ -72,4 +89,20 @@ class _JsonCodec {
         _Codec.parseJsonNumber(json['longitude']),
         _Codec.parseJsonNumber(json['altitude']),
       );
+
+  static Map<String, dynamic> locationUpdatesRequestToJson(
+          _LocationUpdatesRequest request) =>
+      {
+        'id': request.id,
+        'strategy': _Codec.encodeEnum(request.strategy),
+        'permission': _Codec.encodeLocationPermission(request.permission),
+        'accuracy': _Codec.platformSpecific(
+          _Codec.encodeEnum(request.accuracy.android),
+          _Codec.encodeEnum(request.accuracy.ios),
+        ),
+        'displacementFilter': request.displacementFilter,
+        'inBackground': request.inBackground,
+      };
+
+
 }

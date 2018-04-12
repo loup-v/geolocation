@@ -3,7 +3,6 @@
 
 package io.intheloup.geolocation.location
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
@@ -16,6 +15,7 @@ import io.flutter.plugin.common.PluginRegistry
 import io.intheloup.geolocation.GeolocationPlugin
 import io.intheloup.geolocation.data.LocationData
 import io.intheloup.geolocation.data.LocationUpdatesRequest
+import io.intheloup.geolocation.data.Permission
 import io.intheloup.geolocation.data.Result
 import kotlin.coroutines.experimental.suspendCoroutine
 
@@ -58,8 +58,8 @@ class LocationClient(private val activity: Activity) {
 
     // One shot API
 
-    fun isLocationOperational(): Result {
-        val status = currentServiceStatus()
+    fun isLocationOperational(permission: Permission): Result {
+        val status = currentServiceStatus(permission)
         return if (status.isReady) {
             Result.success(true)
         } else {
@@ -67,8 +67,8 @@ class LocationClient(private val activity: Activity) {
         }
     }
 
-    suspend fun requestLocationPermission(): Result {
-        val validity = validateServiceStatus()
+    suspend fun requestLocationPermission(permission: Permission): Result {
+        val validity = validateServiceStatus(permission)
         return if (validity.isValid) {
             Result.success(true)
         } else {
@@ -76,8 +76,8 @@ class LocationClient(private val activity: Activity) {
         }
     }
 
-    suspend fun lastKnownLocation(): Result {
-        val validity = validateServiceStatus()
+    suspend fun lastKnownLocation(permission: Permission): Result {
+        val validity = validateServiceStatus(permission)
         if (!validity.isValid) {
             return validity.failure!!
         }
@@ -99,7 +99,7 @@ class LocationClient(private val activity: Activity) {
     // Updates API
 
     suspend fun addLocationUpdatesRequest(request: LocationUpdatesRequest) {
-        val validity = validateServiceStatus()
+        val validity = validateServiceStatus(request.permission)
         if (!validity.isValid) {
             onLocationUpdatesResult(validity.failure!!)
             return
@@ -169,7 +169,7 @@ class LocationClient(private val activity: Activity) {
 
         val locationRequest = LocationRequest.create()
 
-        locationRequest.priority = locationUpdatesRequests.map { it.accuracy.android.androidValue }
+        locationRequest.priority = locationUpdatesRequests.map { it.accuracy.androidValue }
                 .sortedWith(Comparator { o1, o2 ->
                     when (o1) {
                         o2 -> 0
@@ -179,11 +179,14 @@ class LocationClient(private val activity: Activity) {
                 })
                 .first()
 
-        locationRequest.smallestDisplacement = locationUpdatesRequests.map { it.displacementFilter }.min()!!
+        val smallestDisplacement = locationUpdatesRequests.map { it.displacementFilter }.min()!!
+        if (smallestDisplacement > 0) {
+            locationRequest.smallestDisplacement = smallestDisplacement
+        }
 
         if (locationUpdatesRequests.any { it.strategy == LocationUpdatesRequest.Strategy.Continuous }) {
-            locationRequest.interval = 10000
-            locationRequest.fastestInterval = 5000
+            locationRequest.interval = 5000
+            locationRequest.fastestInterval = 2500
         } else {
             locationRequest.numUpdates = 1
         }
@@ -200,7 +203,10 @@ class LocationClient(private val activity: Activity) {
     }
 
     private fun startLocation() {
-        currentLocationRequest!!.setExpirationDuration(30000)
+        if (currentLocationRequest!!.numUpdates == 1) {
+            currentLocationRequest!!.setExpirationDuration(30000)
+        }
+
         providerClient.requestLocationUpdates(currentLocationRequest!!, locationCallback, null)
     }
 
@@ -231,12 +237,12 @@ class LocationClient(private val activity: Activity) {
 
     // Service status
 
-    private suspend fun validateServiceStatus(): ValidateServiceStatus {
-        val status = currentServiceStatus()
+    private suspend fun validateServiceStatus(permission: Permission): ValidateServiceStatus {
+        val status = currentServiceStatus(permission)
         if (status.isReady) return ValidateServiceStatus(true)
 
         return if (status.needsAuthorization) {
-            if (requestPermission()) {
+            if (requestPermission(permission)) {
                 ValidateServiceStatus(true)
             } else {
                 ValidateServiceStatus(false, Result.failure(Result.Error.Type.PermissionDenied))
@@ -246,7 +252,7 @@ class LocationClient(private val activity: Activity) {
         }
     }
 
-    private fun currentServiceStatus(): ServiceStatus {
+    private fun currentServiceStatus(permission: Permission): ServiceStatus {
         val connectionResult = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity)
         if (connectionResult != ConnectionResult.SUCCESS) {
             return ServiceStatus(false, false,
@@ -258,7 +264,7 @@ class LocationClient(private val activity: Activity) {
             return ServiceStatus(false, false, Result.failure(Result.Error.Type.ServiceDisabled))
         }
 
-        if (LocationHelper.getLocationPermissionRequest(activity) == LocationHelper.LocationPermissionRequest.Undefined) {
+        if (!LocationHelper.isPermissionDeclared(activity, permission)) {
             return ServiceStatus(false, false, Result.failure(Result.Error.Type.Runtime, message = "Missing location permission in AndroidManifest.xml. You need to add one of ACCESS_FINE_LOCATION or ACCESS_COARSE_LOCATION. See readme for details.", fatal = true))
         }
 
@@ -272,19 +278,14 @@ class LocationClient(private val activity: Activity) {
 
     // Permission
 
-    private suspend fun requestPermission(): Boolean = suspendCoroutine { cont ->
+    private suspend fun requestPermission(permission: Permission): Boolean = suspendCoroutine { cont ->
         val callback = Callback<Unit, Unit>(
                 success = { _ -> cont.resume(true) },
                 failure = { _ -> cont.resume(false) }
         )
         permissionCallbacks.add(callback)
 
-        val permission = if (LocationHelper.getLocationPermissionRequest(activity) == LocationHelper.LocationPermissionRequest.Fine) {
-            Manifest.permission.ACCESS_FINE_LOCATION
-        } else {
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        }
-        ActivityCompat.requestPermissions(activity, arrayOf(permission), GeolocationPlugin.Intents.LocationPermissionRequestId)
+        ActivityCompat.requestPermissions(activity, arrayOf(permission.manifestValue), GeolocationPlugin.Intents.LocationPermissionRequestId)
     }
 
 
