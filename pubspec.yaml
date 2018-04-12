@@ -1,6 +1,6 @@
 name: geolocation
 description: Geolocation plugin for iOS and Android
-version: 0.2.0
+version: 0.2.1
 author: Loup Inc. <hello@intheloup.io>
 homepage: https://github.com/loup-v/geolocation
 
