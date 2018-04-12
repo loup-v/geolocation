@@ -43,16 +43,18 @@ Android and iOS require to declare the location permission in a configuration fi
 
 #### For iOS
 
-There are two kinds of location permission available in iOS: "when in use" (only when app is in foreground) and "always" (foreground and background).
+There are two kinds of location permission available in iOS: "when in use" and "always".
+If you don't know what permission to choose for your usage, see:
+https://developer.apple.com/documentation/corelocation/choosing_the_authorization_level_for_location_services
+
 You must specify the description for the desired permission in `Info.plist`.
 
-**For iOS 9/10**: `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription`
+**When running on iOS 9/10**: `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription`
 
-**For iOS 11+**: `NSLocationAlwaysAndWhenInUseUsageDescription` or `NSLocationWhenInUseUsageDescription`
+**When running on iOS 11+**: `NSLocationAlwaysAndWhenInUseUsageDescription` **and** `NSLocationWhenInUseUsageDescription`
 
-Geolocation automatically requests the associated permission at runtime, based on the content of `Infos.plist`.
 
-### For Android
+#### For Android
 
 There are two kinds of location permission in Android: "coarse" and "fine".
 Coarse location will allow to get approximate location based on sensors like the Wifi, while fine location returns the most accurate location using GPS (in addition to coarse).
@@ -69,19 +71,18 @@ You need to declare one of the two permissions in `AndroidManifest.xml`:
   
 Note that `ACCESS_FINE_LOCATION` permission includes `ACCESS_COARSE_LOCATION`.
 
-### Runtime request
 
-On Android (api 23+) and iOS, apps need to request permission at runtime.
-Geolocation plugin handles this automatically. 
-If the user denies location permission, location result will return an error of type `GeolocationResultErrorType.permissionDenied`.
+## API
 
-Alternatively you can also manually check and request location permission.
-This might be useful if you want to ask the location permission beforehand, during an onboarding flow for instance.
+For more complete documentation on all usage, check the API documentation:  
+https://pub.dartlang.org/documentation/geolocation/0.2.0/geolocation/geolocation-library.html
 
 ### Check if location service is operational
 
+API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.0/geolocation/Geolocation/isLocationOperational.html
+
 ```dart
-final GeolocationResult result = await Geolocation.isLocationOperational;
+final GeolocationResult result = await Geolocation.isLocationOperational();
 if(result.isSuccessful) {
   // location service is enabled, and location permission is granted
 } else {
@@ -91,8 +92,12 @@ if(result.isSuccessful) {
 
 ### Request location permission
 
+On Android (api 23+) and iOS, geolocation needs to request permission at runtime.
+
 _Note: You are not required to request permission manually. 
-Geolocation plugin will request permission automatically if it's necessarily, when you make a location request._   
+Geolocation plugin will request permission (`whenInUse` on iOS and `ACCESS_FINE_LOCATION` on Android) automatically if it's necessarily, when you make a location request._
+
+API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.0/geolocation/Geolocation/requestLocationPermission.html
 
 ```dart
 final GeolocationResult result = await Geolocation.requestLocationPermission();
@@ -105,44 +110,45 @@ if(result.isSuccessful) {
 ``` 
 
 
-## Location API
+### Get the current one-shot location
 
-### Get the last known location
+Geolocation offers three methods:
 
-See api documentation: [link]
+* Last known location (best on Android):  
+https://pub.dartlang.org/documentation/geolocation/0.2.0/geolocation/Geolocation/lastKnownLocation.html
+* Single location update (best on iOS):   
+https://pub.dartlang.org/documentation/geolocation/0.2.0/geolocation/Geolocation/singleLocationUpdate.html
+* Current location (best of both worlds, tries to retrieve last known location on Android, otherwise requests a single location update):   
+https://pub.dartlang.org/documentation/geolocation/0.2.0/geolocation/Geolocation/currentLocation.html
+
 
 ```dart
-final LocationResult result = await Geolocation.lastKnownLocation;
-if(result.isSuccessful) {
-  print('lat: ${result.location.latitude}');
-}
+// best option for most cases
+Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
+  if(result.isSuccessful) {
+    Double latitude = result.location.latitude;
+  }
+});
+
+// force a single location update
+Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
+  // to with result
+});
+
+// get last known location, which is a future rather than a stream
+LocationResult result = await Geolocation.lastKnownLocation();
+
 ```
 
 
-### Get the current location
+### Handle location result
 
-See api documentation: https://pub.dartlang.org/documentation/geolocation/
+Location request return either a `LocationResult` future or a stream of `LocationResult`.
 
-```dart
-LocationResult result = await Geolocation.currentLocation(LocationAccuracy.best);
-```
-
-
-### Get a single location update
-
-See api documentation: https://pub.dartlang.org/documentation/geolocation/
+API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.0/geolocation/LocationResult-class.html
 
 ```dart
-LocationResult result = await Geolocation.singleLocationUpdate(LocationAccuracy.best);
-```
-
-
-### Result
-
-All location API return a `LocationResult` future.
-
-```dart
-final LocationResult result = await Geolocation.lastKnownLocation;
+LocationResult result = await Geolocation.lastKnownLocation();
 
 if (result.isSuccessful) {
   // location request successful, location is guaranteed to not be null 
