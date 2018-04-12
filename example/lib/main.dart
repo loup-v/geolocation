@@ -5,14 +5,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocation/geolocation.dart';
 import 'tab_location.dart';
+import 'tab_track.dart';
 import 'tab_settings.dart';
 
 void main() => runApp(new MyApp());
 
 class MyApp extends StatefulWidget {
-
   MyApp() {
-    Geolocation.verboseLogging = true;
+    Geolocation.loggingEnabled = true;
   }
 
   @override
@@ -20,7 +20,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
@@ -35,10 +34,10 @@ class _MyAppState extends State<MyApp> {
               title: new Text('Track'),
               icon: new Icon(Icons.location_searching),
             ),
-//            new BottomNavigationBarItem(
-//              title: new Text('Geocode'),
-//              icon: new Icon(Icons.location_city),
-//            ),
+            new BottomNavigationBarItem(
+              title: new Text('Geocode'),
+              icon: new Icon(Icons.location_city),
+            ),
             new BottomNavigationBarItem(
               title: new Text('Settings'),
               icon: new Icon(Icons.settings_input_antenna),
@@ -51,7 +50,9 @@ class _MyAppState extends State<MyApp> {
               switch (index) {
                 case 0:
                   return new TabLocation();
-                case 2:
+                case 1:
+                  return new TabTrack();
+                case 3:
                   return new TabSettings();
                 default:
                   return new Container(

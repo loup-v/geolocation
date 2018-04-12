@@ -5,13 +5,14 @@
 
 import Foundation
 
-struct LocationUpdateParam: Codable {
-  let strategy: Strategy
-  let accuracy: Facet
+struct LocationUpdatesRequest: Codable {
+  let id: Int
   
-  struct Facet: Codable {
-    let ios: Accuracy
-  }
+  let strategy: Strategy
+  let permission: Permission
+  let accuracy: Accuracy
+  let displacementFilter: Double
+  let inBackground: Bool
   
   enum Strategy: String, Codable {
     case current = "current"

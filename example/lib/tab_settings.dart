@@ -1,9 +1,6 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +23,7 @@ class _TabSettingsState extends State<TabSettings> {
   }
 
   _isLocationOperationalPressed() async {
-    GeolocationResult result = await Geolocation.isLocationOperational;
+    final GeolocationResult result = await Geolocation.isLocationOperational();
     if (mounted) {
       setState(() {
         _locationOperationalResult = result;
@@ -35,12 +32,11 @@ class _TabSettingsState extends State<TabSettings> {
   }
 
   _requestLocationPermissionPressed() async {
-    GeolocationResult result = await Geolocation.requestLocationPermission();
+    final GeolocationResult result = await Geolocation.requestLocationPermission();
     if (mounted) {
       setState(() {
         _requestPermissionResult = result;
       });
-      _isLocationOperationalPressed();
     }
   }
 

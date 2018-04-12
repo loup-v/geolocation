@@ -8,35 +8,23 @@ import CoreLocation
 
 extension CLLocationManager {
   
-  func findRequestedPermission() -> LocationPermissionRequest {
-    let isAlwaysRequested: Bool
-    let isWhenInUseRequested: Bool
-    
+  func isPermissionDeclared(for permission: Permission) -> Bool {
     if (UIDevice.current.systemVersion as NSString).floatValue < 11 {
-      isAlwaysRequested = hasPlistValue(forKey: "NSLocationAlwaysUsageDescription") && hasPlistValue(forKey: "NSLocationAlwaysAndWhenInUseUsageDescription")
-      isWhenInUseRequested = hasPlistValue(forKey: "NSLocationWhenInUseUsageDescription")
+      let isAlwaysRequested = hasPlistValue(forKey: "NSLocationAlwaysUsageDescription") && hasPlistValue(forKey: "NSLocationAlwaysAndWhenInUseUsageDescription")
+      let isWhenInUseRequested = hasPlistValue(forKey: "NSLocationWhenInUseUsageDescription")
+      
+      return isAlwaysRequested && permission == .always || isWhenInUseRequested
     } else {
-      isAlwaysRequested = hasPlistValue(forKey: "NSLocationAlwaysAndWhenInUseUsageDescription")
-      isWhenInUseRequested = hasPlistValue(forKey: "NSLocationWhenInUseUsageDescription")
-    }
-    
-    if isAlwaysRequested {
-      return .always
-    } else if isWhenInUseRequested {
-      return .whenInUse
-    } else {
-      return .undefined
+      return hasPlistValue(forKey: "NSLocationAlwaysAndWhenInUseUsageDescription") && hasPlistValue(forKey: "NSLocationWhenInUseUsageDescription")
     }
   }
   
-  func requestAuthorization(for permission: LocationPermissionRequest) {
+  func requestAuthorization(for permission: Permission) {
     switch permission {
     case .always:
       self.requestAlwaysAuthorization()
     case .whenInUse:
       self.requestWhenInUseAuthorization()
-    case .undefined:
-      fatalError()
     }
   }
   

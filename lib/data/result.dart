@@ -3,20 +3,22 @@
 
 part of geolocation;
 
+/// Contains the result from a binary (success or failed) request.
+///
+/// [isSuccessful] means the request was successful.
+/// Otherwise, [error] will contain more details.
+///
+/// See also:
+///
+///  * [GeolocationResultError], which contains details on why/what failed.
 class GeolocationResult {
-  GeolocationResult._({
-    @required this.isSuccessful,
+  GeolocationResult._(
+    this.isSuccessful,
     this.error,
-  }) {
+  ) {
     assert(isSuccessful != null);
     assert(isSuccessful || error != null);
   }
-
-  GeolocationResult._fromJson(Map<String, dynamic> json)
-      : isSuccessful = json['isSuccessful'],
-        error = json['error'] != null
-            ? GeolocationResultError._fromJson(json['error'])
-            : null;
 
   final bool isSuccessful;
   final GeolocationResultError error;
@@ -36,35 +38,15 @@ class GeolocationResult {
 }
 
 class GeolocationResultError {
-  GeolocationResultError({
-    @required this.type,
+  GeolocationResultError._(
+    this.type,
     this.message,
     this.additionalInfo,
-  });
+  );
 
   final GeolocationResultErrorType type;
   final String message;
   final dynamic additionalInfo;
-
-  GeolocationResultError._fromJson(Map<String, dynamic> json)
-      : type = _mapResultErrorTypeJson(json['type']),
-        message = json['message'],
-        additionalInfo = GeolocationResultError._mapAdditionalInfoJson(json) {
-    if (json.containsKey('fatal') && json['fatal']) {
-      throw GeolocationException(message);
-    }
-  }
-
-  static dynamic _mapAdditionalInfoJson(Map<String, dynamic> json) {
-    final GeolocationResultErrorType type =
-        _mapResultErrorTypeJson(json['type']);
-    switch (type) {
-      case GeolocationResultErrorType.playServicesUnavailable:
-        return _mapPlayServicesJson(json['playServices']);
-      default:
-        return null;
-    }
-  }
 
   @override
   String toString() {

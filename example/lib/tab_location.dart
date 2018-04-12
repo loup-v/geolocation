@@ -27,42 +27,35 @@ class _TabLocationState extends State<TabLocation> {
 
   _onLastKnownPressed() async {
     final int id = _createLocation('last known', Colors.blueGrey);
-    LocationResult result = await Geolocation.lastKnownLocation;
+    LocationResult result = await Geolocation.lastKnownLocation();
     if (mounted) {
       _updateLocation(id, result);
     }
   }
 
-  _onCurrentPressed() async {
+  _onCurrentPressed() {
     final int id = _createLocation('current', Colors.lightGreen);
-    Stream<LocationResult> stream =
-        await Geolocation.currentLocation(LocationAccuracy.best);
-    if (!mounted) return;
-
-    final subscription = stream.listen((result) {
-      setState(() {
-        _updateLocation(id, result);
-      });
-    });
-    _subscriptions.add(subscription);
+    _listenToLocation(
+        id,
+        Geolocation.currentLocation(accuracy: LocationAccuracy.best));
   }
 
   _onSingleUpdatePressed() async {
     final int id = _createLocation('update', Colors.deepOrange);
-    Stream<LocationResult> stream =
-        await Geolocation.singleLocationUpdate(LocationAccuracy.best);
-    if (!mounted) return;
+    _listenToLocation(
+        id, Geolocation.singleLocationUpdate(accuracy: LocationAccuracy.best));
+  }
 
+  _listenToLocation(int id, Stream<LocationResult> stream) {
     final subscription = stream.listen((result) {
-      setState(() {
-        _updateLocation(id, result);
-      });
+      _updateLocation(id, result);
     });
-    _subscriptions.add(subscription);
 
     subscription.onDone(() {
       _subscriptions.remove(subscription);
     });
+
+    _subscriptions.add(subscription);
   }
 
   int _createLocation(String origin, Color color) {
@@ -74,12 +67,12 @@ class _TabLocationState extends State<TabLocation> {
     setState(() {
       _locations.insert(
         0,
-        LocationData(
+        new LocationData(
           id: newId,
           result: null,
           origin: origin,
           color: color,
-          createdAtTimestamp: DateTime.now().millisecondsSinceEpoch,
+          createdAtTimestamp: new DateTime.now().millisecondsSinceEpoch,
           elapsedTimeSeconds: null,
         ),
       );
@@ -95,13 +88,13 @@ class _TabLocationState extends State<TabLocation> {
     final LocationData location = _locations[index];
 
     setState(() {
-      _locations[index] = LocationData(
+      _locations[index] = new LocationData(
         id: location.id,
         result: result,
         origin: location.origin,
         color: location.color,
         createdAtTimestamp: location.createdAtTimestamp,
-        elapsedTimeSeconds: (DateTime.now().millisecondsSinceEpoch -
+        elapsedTimeSeconds: (new DateTime.now().millisecondsSinceEpoch -
                 location.createdAtTimestamp) ~/
             1000,
       );
@@ -318,11 +311,11 @@ class _Item extends StatelessWidget {
 class LocationData {
   LocationData({
     @required this.id,
-    @required this.result,
+    this.result,
     @required this.origin,
     @required this.color,
     @required this.createdAtTimestamp,
-    @required this.elapsedTimeSeconds,
+    this.elapsedTimeSeconds,
   });
 
   final int id;

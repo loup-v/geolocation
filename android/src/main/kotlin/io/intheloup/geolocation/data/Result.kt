@@ -5,16 +5,16 @@ package io.intheloup.geolocation.data
 
 import com.google.android.gms.common.ConnectionResult
 
-data class Response(val isSuccessful: Boolean,
-                    val data: Any? = null,
-                    val error: Error? = null
+data class Result(val isSuccessful: Boolean,
+                  val data: Any? = null,
+                  val error: Error? = null
 ) {
     companion object {
-        fun success(data: Any) = Response(isSuccessful = true, data = data)
+        fun success(data: Any) = Result(isSuccessful = true, data = data)
 
-        fun failure(type: String, playServices: String? = null, message: String? = null, fatal: Boolean = false) = Response(
+        fun failure(type: String, playServices: String? = null, message: String? = null, fatal: Boolean = false) = Result(
                 isSuccessful = false,
-                error = Response.Error(
+                error = Result.Error(
                         type = type,
                         playServices = playServices,
                         message = message,

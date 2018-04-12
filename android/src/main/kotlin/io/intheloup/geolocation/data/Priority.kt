@@ -4,16 +4,27 @@
 package io.intheloup.geolocation.data
 
 import com.google.android.gms.location.LocationRequest
+import com.squareup.moshi.FromJson
+import com.squareup.moshi.ToJson
 
-object Priority {
-    const val Low = "low"
-    const val Balanced = "balanced"
-    const val High = "high"
+enum class Priority {
+    NoPower, Low, Balanced, High;
 
-    fun toAndroidValue(value: String) = when (value) {
-        Low -> LocationRequest.PRIORITY_LOW_POWER
-        Balanced -> LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
-        High -> LocationRequest.PRIORITY_HIGH_ACCURACY
-        else -> throw IllegalStateException("unknown accuracy: $value")
+    val androidValue
+        get() = when (this) {
+            NoPower -> LocationRequest.PRIORITY_NO_POWER
+            Low -> LocationRequest.PRIORITY_LOW_POWER
+            Balanced -> LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+            High -> LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+
+    class Adapter {
+        @FromJson
+        fun fromJson(json: String): Priority =
+                Priority.valueOf(json.capitalize())
+
+        @ToJson
+        fun toJson(value: Priority): String =
+                value.toString().toLowerCase()
     }
 }

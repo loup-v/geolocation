@@ -18,7 +18,7 @@
         android:name="io.flutter.app.FlutterApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="geolocation_example"
+        android:label="Geolocation"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".MainActivity"
