@@ -44,14 +44,26 @@ Android and iOS require to declare the location permission in a configuration fi
 #### For iOS
 
 There are two kinds of location permission available in iOS: "when in use" and "always".
+
 If you don't know what permission to choose for your usage, see:
 https://developer.apple.com/documentation/corelocation/choosing_the_authorization_level_for_location_services
 
-You must specify the description for the desired permission in `Info.plist`.
+You must specify the description for the desired permission in `Info.plist`:
 
-**When running on iOS 9/10**: `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription`
+*When running on iOS 9/10: `NSLocationWhenInUseUsageDescription` or `NSLocationAlwaysUsageDescription`
+*When running on iOS 11+: `NSLocationAlwaysAndWhenInUseUsageDescription` **and** `NSLocationWhenInUseUsageDescription`
 
-**When running on iOS 11+**: `NSLocationAlwaysAndWhenInUseUsageDescription` **and** `NSLocationWhenInUseUsageDescription`
+You can do this via XCode, or directly by opening `io/Runner/Info.plist` in you current IDE:
+
+```xml
+<dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Reason why app needs location</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Reason why app needs location</string>
+    ...
+</dict>
+```
 
 
 #### For Android
