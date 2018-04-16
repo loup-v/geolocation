@@ -17,6 +17,8 @@ import io.intheloup.geolocation.data.LocationData
 import io.intheloup.geolocation.data.LocationUpdatesRequest
 import io.intheloup.geolocation.data.Permission
 import io.intheloup.geolocation.data.Result
+import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.launch
 import kotlin.coroutines.experimental.suspendCoroutine
 
 @SuppressLint("MissingPermission")
@@ -106,12 +108,12 @@ class LocationClient(private val activity: Activity) {
         }
 
         locationUpdatesRequests.add(request)
-        updateRunningRequest()
+        updateLocationRequest()
     }
 
     suspend fun removeLocationUpdatesRequest(request: LocationUpdatesRequest) {
         locationUpdatesRequests.removeAll { it.id == request.id }
-        updateRunningRequest()
+        updateLocationRequest()
     }
 
     fun registerLocationUpdatesCallback(callback: (Result) -> Unit) {
@@ -133,7 +135,7 @@ class LocationClient(private val activity: Activity) {
         }
 
         isPaused = false
-        startLocation()
+        updateLocationRequest()
     }
 
     fun pause() {
@@ -142,6 +144,7 @@ class LocationClient(private val activity: Activity) {
         }
 
         isPaused = true
+        updateLocationRequest()
         providerClient.removeLocationUpdates(locationCallback)
     }
 
@@ -152,66 +155,103 @@ class LocationClient(private val activity: Activity) {
         locationUpdatesCallback?.invoke(result)
     }
 
-    private suspend fun updateRunningRequest() {
-        if (locationUpdatesRequests.isEmpty()) {
-            currentLocationRequest = null
-            isPaused = false
-            providerClient.removeLocationUpdates(locationCallback)
-            return
-        }
+    private fun updateLocationRequest() {
+        launch(UI) {
+            if (locationUpdatesRequests.isEmpty()) {
+                currentLocationRequest = null
+                isPaused = false
+                providerClient.removeLocationUpdates(locationCallback)
+                return@launch
+            }
 
-        if (locationUpdatesRequests.all { it.strategy == LocationUpdatesRequest.Strategy.Current }) {
-            val lastKnownSuccessful = currentLocation()
-            if (lastKnownSuccessful) {
-                return
+            if (currentLocationRequest != null) {
+                providerClient.removeLocationUpdates(locationCallback)
+            }
+
+            if (isPaused) {
+                return@launch
+            }
+
+            val hasCurrentRequest = locationUpdatesRequests.any { it.strategy == LocationUpdatesRequest.Strategy.Current }
+            if (hasCurrentRequest) {
+                val lastLocationResult = lastLocationIfAvailable()
+                if (lastLocationResult != null) {
+                    onLocationUpdatesResult(lastLocationResult)
+
+                    val hasOnlyCurrentRequest = locationUpdatesRequests.all { it.strategy == LocationUpdatesRequest.Strategy.Current }
+                    if (hasOnlyCurrentRequest) {
+                        return@launch
+                    }
+                }
+            }
+
+            val locationRequest = LocationRequest.create()
+
+            locationRequest.priority = locationUpdatesRequests.map { it.accuracy.androidValue }
+                    .sortedWith(Comparator { o1, o2 ->
+                        when (o1) {
+                            o2 -> 0
+                            LocationHelper.getBestPriority(o1, o2) -> 1
+                            else -> -1
+                        }
+                    })
+                    .first()
+
+            locationUpdatesRequests.map { it.displacementFilter }
+                    .min()!!
+                    .takeIf { it > 0 }
+                    ?.let { locationRequest.smallestDisplacement = it }
+
+            locationUpdatesRequests
+                    .filter { it.options.interval != null }
+                    .map { it.options.interval!! }
+                    .min()
+                    ?.let { locationRequest.interval = it }
+
+            locationUpdatesRequests
+                    .filter { it.options.fastestInterval != null }
+                    .map { it.options.fastestInterval!! }
+                    .min()
+                    ?.let { locationRequest.fastestInterval = it }
+
+            locationUpdatesRequests
+                    .filter { it.options.expirationTime != null }
+                    .map { it.options.expirationTime!! }
+                    .min()
+                    ?.let { locationRequest.expirationTime = it }
+
+            locationUpdatesRequests
+                    .filter { it.options.expirationDuration != null }
+                    .map { it.options.expirationDuration!! }
+                    .min()
+                    ?.let { locationRequest.setExpirationDuration(it) }
+
+            locationUpdatesRequests
+                    .filter { it.options.maxWaitTime != null }
+                    .map { it.options.maxWaitTime!! }
+                    .min()
+                    ?.let { locationRequest.maxWaitTime = it }
+
+            if (locationUpdatesRequests.any { it.strategy == LocationUpdatesRequest.Strategy.Continuous }) {
+                locationUpdatesRequests
+                        .filter { it.options.numUpdates != null }
+                        .map { it.options.numUpdates!! }
+                        .max()
+                        ?.let { locationRequest.numUpdates = it }
+            } else {
+                locationRequest.numUpdates = 1
+            }
+
+            currentLocationRequest = locationRequest
+
+            if (!isPaused) {
+                providerClient.requestLocationUpdates(currentLocationRequest!!, locationCallback, null)
             }
         }
-
-        val locationRequest = LocationRequest.create()
-
-        locationRequest.priority = locationUpdatesRequests.map { it.accuracy.androidValue }
-                .sortedWith(Comparator { o1, o2 ->
-                    when (o1) {
-                        o2 -> 0
-                        LocationHelper.getBestPriority(o1, o2) -> 1
-                        else -> -1
-                    }
-                })
-                .first()
-
-        val smallestDisplacement = locationUpdatesRequests.map { it.displacementFilter }.min()!!
-        if (smallestDisplacement > 0) {
-            locationRequest.smallestDisplacement = smallestDisplacement
-        }
-
-        if (locationUpdatesRequests.any { it.strategy == LocationUpdatesRequest.Strategy.Continuous }) {
-            locationRequest.interval = 5000
-            locationRequest.fastestInterval = 2500
-        } else {
-            locationRequest.numUpdates = 1
-        }
-
-        if (currentLocationRequest != null) {
-            providerClient.removeLocationUpdates(locationCallback)
-        }
-
-        currentLocationRequest = locationRequest
-
-        if (!isPaused) {
-            startLocation()
-        }
     }
 
-    private fun startLocation() {
-        if (currentLocationRequest!!.numUpdates == 1) {
-            currentLocationRequest!!.setExpirationDuration(30000)
-        }
-
-        providerClient.requestLocationUpdates(currentLocationRequest!!, locationCallback, null)
-    }
-
-    private suspend fun currentLocation(): Boolean {
-        val result = try {
+    private suspend fun lastLocationIfAvailable(): Result? {
+        return try {
             val availability = locationAvailability()
             if (availability.isLocationAvailable) {
                 val location = lastLocation()
@@ -226,12 +266,12 @@ class LocationClient(private val activity: Activity) {
         } catch (e: Exception) {
             Result.failure(Result.Error.Type.Runtime, message = e.message)
         }
-
-        if (result != null) {
-            onLocationUpdatesResult(result)
-        }
-
-        return result != null
+//
+//        if (result != null) {
+//            onLocationUpdatesResult(result)
+//        }
+//
+//        return result != null
     }
 
 

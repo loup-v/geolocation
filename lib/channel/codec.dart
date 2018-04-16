@@ -12,8 +12,8 @@ class _Codec {
 
   static String encodeLocationPermission(LocationPermission permission) =>
       platformSpecific(
-        _Codec.encodeEnum(permission.android),
-        _Codec.encodeEnum(permission.ios),
+        android: _Codec.encodeEnum(permission.android),
+        ios: _Codec.encodeEnum(permission.ios),
       );
 
   static String encodeLocationUpdatesRequest(_LocationUpdatesRequest request) =>
@@ -28,7 +28,10 @@ class _Codec {
     return value.toString().split('.').last;
   }
 
-  static String platformSpecific(String android, String ios) {
+  static String platformSpecific({
+    @required String android,
+    @required String ios,
+  }) {
     if (Platform.isAndroid) {
       return android;
     } else if (Platform.isIOS) {
@@ -97,10 +100,14 @@ class _JsonCodec {
         'strategy': _Codec.encodeEnum(request.strategy),
         'permission': _Codec.encodeLocationPermission(request.permission),
         'accuracy': _Codec.platformSpecific(
-          _Codec.encodeEnum(request.accuracy.android),
-          _Codec.encodeEnum(request.accuracy.ios),
+          android: _Codec.encodeEnum(request.accuracy.android),
+          ios: _Codec.encodeEnum(request.accuracy.ios),
         ),
         'displacementFilter': request.displacementFilter,
         'inBackground': request.inBackground,
+        'options': _Codec.platformSpecific(
+          android: _Codec.encodeEnum(request.androidOptions),
+          ios: _Codec.encodeEnum(request.accuracy.ios),
+        ),
       };
 }

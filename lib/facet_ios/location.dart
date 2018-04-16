@@ -14,3 +14,23 @@ enum LocationAccuracyIOS {
   best,
   bestForNavigation
 }
+
+/// iOS specific options for location request.
+///
+/// Documentation: <https://developer.apple.com/documentation/corelocation/cllocationmanager>
+class LocationOptionsIOS {
+  const LocationOptionsIOS({
+    this.showsBackgroundLocationIndicator = false,
+    this.activityType = LocationActivityIOS.other,
+  });
+
+  final bool showsBackgroundLocationIndicator;
+  final LocationActivityIOS activityType;
+}
+
+enum LocationActivityIOS {
+  other,
+  automotiveNavigation,
+  fitness,
+  otherNavigation
+}
