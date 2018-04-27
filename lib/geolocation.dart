@@ -159,7 +159,7 @@ class Geolocation {
     @required int id,
     @required GeoFence geoFence,
   }) =>
-      _locationChannel.geoFenceUpdates(new _GeoFenceUpdatesRequest(id, geoFence));
+      _locationChannel.geoFenceUpdates(new _GeoFenceUpdatesRequest(id, geoFence), false);
 
   /// Requests continuous [Location] updates.
   /// Automatically request location [permission] beforehand if not granted.
