@@ -20,6 +20,7 @@ class _TabGeoFenceState extends State<TabGeoFence> {
   GeolocationResult _locationOperationalResult;
   GeolocationResult _requestPermissionResult;
   GeoFenceResult _geoFenceResult;
+  bool isMonitoringRegions = false;
 
   @override
   initState() {
@@ -50,6 +51,10 @@ class _TabGeoFenceState extends State<TabGeoFence> {
   }
 
   _requestGeoFencingPressed() {
+    setState(() {
+              isMonitoringRegions = true;
+
+        });
     _listenToGeoFenceUpdate(
       Geolocation.addGeoFencingRequest(id: 0, geoFence: new GeoFence(50.867138, 4.713505, 8.0, 100.0, "aTestId"))
       );
@@ -85,18 +90,22 @@ class _TabGeoFenceState extends State<TabGeoFence> {
           new _Item(
             isPermissionRequest: false,
             isGeoFenceRequest: false,
+            isMonitoringRegions: this.isMonitoringRegions,
             result: _locationOperationalResult,
             onPressed: _isLocationOperationalPressed,
           ),
           new _Item(
             isPermissionRequest: true,
             isGeoFenceRequest: false,
+                        isMonitoringRegions: this.isMonitoringRegions,
             result: _requestPermissionResult,
             onPressed: _requestLocationPermissionPressed,
           ),
           new _Item(
             isPermissionRequest: false,
             isGeoFenceRequest: true,
+                        isMonitoringRegions: this.isMonitoringRegions,
+
             geoFenceResult: _geoFenceResult,
             onPressed: _requestGeoFencingPressed,
           ),
@@ -107,10 +116,11 @@ class _TabGeoFenceState extends State<TabGeoFence> {
 }
 
 class _Item extends StatelessWidget {
-  _Item({@required this.isPermissionRequest, this.isGeoFenceRequest, this.result, this.geoFenceResult, this.onPressed});
+  _Item({@required this.isPermissionRequest, this.isGeoFenceRequest, this.isMonitoringRegions, this.result, this.geoFenceResult, this.onPressed});
 
   final bool isPermissionRequest;
   final bool isGeoFenceRequest;
+  final bool isMonitoringRegions;
   final GeolocationResult result;
   final GeoFenceResult geoFenceResult;
   final VoidCallback onPressed;
@@ -159,9 +169,16 @@ class _Item extends StatelessWidget {
         status = geoFenceResult.didEnter ? 'inside' : 'outside';
         color = geoFenceResult.didEnter ? Colors.green : Colors.red;
       } else {
-        text = 'Tap to monitor regions.';
-        status = 'not set';
-        color = Colors.grey;
+        if (!isMonitoringRegions) {
+          text = 'Tap to monitor regions.';
+          status = 'not set';
+          color = Colors.grey;
+        } else {
+          text = 'Monitoring region';
+          status = 'waiting';
+          color = Colors.blueGrey;
+        }
+        
       }
 
       }
