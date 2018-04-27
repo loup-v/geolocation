@@ -5,13 +5,13 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Pods/.symlinks/flutter/ios`)
-  - geolocation (from `Pods/.symlinks/plugins/geolocation copy/ios`)
+  - geolocation (from `Pods/.symlinks/plugins/geolocation/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Pods/.symlinks/flutter/ios
   geolocation:
-    :path: Pods/.symlinks/plugins/geolocation copy/ios
+    :path: Pods/.symlinks/plugins/geolocation/ios
 
 SPEC CHECKSUMS:
   Flutter: 58dd7d1b27887414a370fcccb9e645c08ffd7a6a
