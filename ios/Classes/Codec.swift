@@ -20,4 +20,8 @@ struct Codec {
   static func decodeLocationUpdatesRequest(from arugments: Any?) -> LocationUpdatesRequest {
     return try! jsonDecoder.decode(LocationUpdatesRequest.self, from: (arugments as! String).data(using: .utf8)!)
   }
+    
+    static func decodeGeoFencingRequest(from arguments: Any?) -> GeoFenceUpdatesRequest {
+        return try! jsonDecoder.decode(GeoFenceUpdatesRequest.self, from: (arguments as! String).data(using: .utf8)!)
+    }
 }

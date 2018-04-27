@@ -23,3 +23,13 @@ class _LocationUpdatesRequest {
 }
 
 enum _LocationUpdateStrategy { current, single, continuous }
+
+class _GeoFenceUpdatesRequest {
+  _GeoFenceUpdatesRequest(
+    this.id,
+    this.geoFence, 
+  );
+  int id;
+  final GeoFence geoFence;
+}
+

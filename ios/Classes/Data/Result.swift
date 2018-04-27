@@ -29,6 +29,7 @@ struct ResultError: Codable {
     case locationNotFound = "locationNotFound"
     case permissionDenied = "permissionDenied"
     case serviceDisabled = "serviceDisabled"
+    case tooManyRegionsMonitored = "tooManyRegionsMonitored"
   }
 }
 

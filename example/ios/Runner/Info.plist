@@ -5,7 +5,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Reason why app needs location</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Reason why app needs location</string>
+	<string>Reason why app needs location</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleExecutable</key>
@@ -49,5 +49,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location in the background and in the foreground</string>
 </dict>
 </plist>
