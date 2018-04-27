@@ -84,18 +84,21 @@ class _TabGeoFenceState extends State<TabGeoFence> {
         children: ListTile.divideTiles(context: context, tiles: [
           new _Item(
             isPermissionRequest: false,
+            isGeoFenceRequest: false,
             result: _locationOperationalResult,
             onPressed: _isLocationOperationalPressed,
           ),
           new _Item(
             isPermissionRequest: true,
+            isGeoFenceRequest: false,
             result: _requestPermissionResult,
             onPressed: _requestLocationPermissionPressed,
           ),
           new _Item(
             isPermissionRequest: false,
+            isGeoFenceRequest: true,
             geoFenceResult: _geoFenceResult,
-            onPressed: _requestGeoFencingPressed(),
+            onPressed: _requestGeoFencingPressed,
           ),
         ]).toList(),
       ),
@@ -104,9 +107,10 @@ class _TabGeoFenceState extends State<TabGeoFence> {
 }
 
 class _Item extends StatelessWidget {
-  _Item({@required this.isPermissionRequest, this.result, this.geoFenceResult, this.onPressed});
+  _Item({@required this.isPermissionRequest, this.isGeoFenceRequest, this.result, this.geoFenceResult, this.onPressed});
 
   final bool isPermissionRequest;
+  final bool isGeoFenceRequest;
   final GeolocationResult result;
   final GeoFenceResult geoFenceResult;
   final VoidCallback onPressed;
@@ -147,16 +151,24 @@ class _Item extends StatelessWidget {
         status = 'failure';
         color = Colors.red;
       }
+
+    } 
+    else if (isGeoFenceRequest) {
       if (geoFenceResult != null) {
-        text = 'Is user inside fence?';
+        text = 'Is user inside $geoFenceResult.geoFence.identifier ?';
         status = geoFenceResult.didEnter ? 'inside' : 'outside';
         color = geoFenceResult.didEnter ? Colors.green : Colors.red;
+      } else {
+        text = 'Tap to monitor regions.';
+        status = 'not set';
+        color = Colors.grey;
       }
-    } else {
+
+      }
+    else {
       text = 'Is ${isPermissionRequest
           ? 'permission granted'
           : 'location operational'}?';
-
       status = 'undefined';
       color = Colors.blueGrey;
     }

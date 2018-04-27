@@ -130,7 +130,7 @@ class _LocationChannel {
   // Creates a new subscription to the channel stream and notifies
 // the platform about the desired params (accuracy, frequency, strategy) so the platform
 // can start the location request if it's the first subscription or update ongoing request with new params if needed
-Stream<GeoFenceResult> geoFenceUpdates(_GeoFenceUpdatesRequest request) {
+Stream<GeoFenceResult> geoFenceUpdates(_GeoFenceUpdatesRequest request, bool singleUpdate) {
     // The stream that will be returned for the current geofence request
     StreamController<GeoFenceResult> controller;
 
@@ -149,6 +149,10 @@ Stream<GeoFenceResult> geoFenceUpdates(_GeoFenceUpdatesRequest request) {
 
     subscription.onDone(() {
       _geoFenceUpdatesSubscriptions.remove(subscriptionWithRequest);
+          if (singleUpdate) {
+            controller.close();
+            subscription.cancel();
+          }
     });
 
     subscriptionWithRequest =

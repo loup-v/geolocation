@@ -15,7 +15,6 @@ class GeoFenceResult {
   final int id;
   final bool didEnter;
 
-  @override
   String dataToString() {
     return '{geofence: $geoFence.toString(), didEnter: $didEnter}';
   }
