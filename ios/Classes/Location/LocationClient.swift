@@ -63,6 +63,10 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     
     
     func register(request: GeoFenceUpdatesRequest, callback: @escaping (Result<GeoFenceResult>) -> Void) {
+        if !locationManager.isPermissionDeclared(for: Permission.whenInUse) {
+            print("app doesn't have permission for location updates")
+            callback(Result<GeoFenceResult>.failure(of: .permissionDenied))
+        }
         if monitoredRegions.count > 19 {
             print("max amount of regions reached, remove one or more regions using unregister(request:) before proceeding")
             callback(Result<GeoFenceResult>.failure(of: .tooManyRegionsMonitored))

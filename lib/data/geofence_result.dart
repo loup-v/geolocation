@@ -6,10 +6,10 @@ part of geolocation;
 /// Contains the result from a geofence request.
 /// [id] the identifier specified in the 
 /// [didEnter] if true means the region specified in [geoFence] was entered, if false means it was exited.
-class GeoFenceResult {
+class GeoFenceResult extends GeolocationResult {
 
   GeoFenceResult._(
-      this.id, this.didEnter, this.geoFence);
+      bool isSuccessful, GeolocationResultError error, this.id, this.didEnter, this.geoFence): super._(isSuccessful, error);
 
   final GeoFence geoFence;
   final int id;

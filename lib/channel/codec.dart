@@ -92,6 +92,8 @@ class _JsonCodec {
 
   static GeoFenceResult geoFenceResultFromJson(Map<String, dynamic> json) =>
       new GeoFenceResult._(
+        json['isSuccessful'],
+        json['error'] != null ? resultErrorFromJson(json['error']) : null,
         json['data']['id'],
         json['data']['result'],
         geoFenceFromJson(json['data']['region']),
