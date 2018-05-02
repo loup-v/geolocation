@@ -51,13 +51,21 @@ class _TabGeoFenceState extends State<TabGeoFence> {
   }
 
   _requestGeoFencingPressed() {
-    setState(() {
-              isMonitoringRegions = true;
 
-        });
-    _listenToGeoFenceUpdate(
-      Geolocation.addGeoFencingRequest(id: 0, geoFence: new GeoFence(50.867138, 4.713505, 8.0, 100.0, "aTestId"))
-      );
+        if (!isMonitoringRegions) {
+          setState(() {
+              isMonitoringRegions = true;
+          });
+          _listenToGeoFenceUpdate(
+            Geolocation.addGeoFencingRequest(id: 0, geoFence: new GeoFence(50.867138, 4.713505, 8.0, 100.0, "aTestId"))
+          );
+        } else {
+          setState(() {
+              isMonitoringRegions = false;
+          });
+          _subscriptions.forEach((it) => it.cancel());
+        }
+
   }
 
   _listenToGeoFenceUpdate(Stream<GeoFenceResult> stream) {
@@ -170,7 +178,7 @@ class _Item extends StatelessWidget {
         color = geoFenceResult.didEnter ? Colors.green : Colors.red;
       } else {
         if (!isMonitoringRegions) {
-          text = 'Tap to monitor regions.';
+          text = 'Tap to monitor region';
           status = 'not set';
           color = Colors.grey;
         } else {
@@ -201,7 +209,7 @@ class _Item extends StatelessWidget {
         height: 3.0,
       ),
       new Text(
-        'Tap to request',
+        isMonitoringRegions ? 'Tap to stop' : 'Tap to request',
         style: const TextStyle(fontSize: 12.0, color: Colors.grey),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
