@@ -179,7 +179,7 @@ Stream<GeoFenceResult> geoFenceUpdates(_GeoFenceUpdatesRequest request, bool sin
             _Codec.encodeGeoFenceUpdatesRequest(request));
       },
       onCancel: () async {
-        _log('remove location updates request [id=${subscriptionWithRequest
+        _log('remove geofence updates request [id=${subscriptionWithRequest
             .request
             .id}]');
         subscriptionWithRequest.subscription.cancel();
@@ -187,7 +187,7 @@ Stream<GeoFenceResult> geoFenceUpdates(_GeoFenceUpdatesRequest request, bool sin
         await _invokeChannelMethod(
             _loggingTag,
             _channel,
-            'removeLocationUpdatesRequest',
+            'removeGeoFencingRequest',
             _Codec.encodeGeoFenceUpdatesRequest(request));
         _geoFenceUpdatesSubscriptions.remove(subscriptionWithRequest);
       },
