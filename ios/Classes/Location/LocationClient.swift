@@ -63,7 +63,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     
     
     func register(request: GeoFenceUpdatesRequest, callback: @escaping (Result<GeoFenceResult>) -> Void) {
-        if !locationManager.isPermissionDeclared(for: Permission.whenInUse) {
+        if !(CLLocationManager.authorizationStatus() == .authorizedWhenInUse || CLLocationManager.authorizationStatus() == .authorizedAlways){
             print("app doesn't have permission for location updates")
             callback(Result<GeoFenceResult>.failure(of: .permissionDenied))
         }

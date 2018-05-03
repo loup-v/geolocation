@@ -173,9 +173,16 @@ class _Item extends StatelessWidget {
     } 
     else if (isGeoFenceRequest) {
       if (geoFenceResult != null) {
-        text = 'Is user inside $geoFenceResult.geoFence.identifier ?';
-        status = geoFenceResult.didEnter ? 'inside' : 'outside';
-        color = geoFenceResult.didEnter ? Colors.green : Colors.red;
+        if (geoFenceResult.isSuccessful) {
+          text = 'Is user inside $geoFenceResult.geoFence.identifier ?';
+          status = geoFenceResult.didEnter ? 'inside' : 'outside';
+          color = geoFenceResult.didEnter ? Colors.green : Colors.red;
+        } else {
+          text = geoFenceResult.error.toString();
+          status = 'failure';
+          color = Colors.red;
+        }
+        
       } else {
         if (!isMonitoringRegions) {
           text = 'Tap to monitor region';

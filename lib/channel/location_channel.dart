@@ -175,7 +175,7 @@ Stream<GeoFenceResult> geoFenceUpdates(_GeoFenceUpdatesRequest request, bool sin
       onListen: () {
         _log('add geofence updates request [id=${subscriptionWithRequest.request
             .id}]');
-        _invokeChannelMethod(_loggingTag, _channel, 'addGeoFencingRequest',
+        _invokeChannelMethod('geofence result', _channel, 'addGeoFencingRequest',
             _Codec.encodeGeoFenceUpdatesRequest(request));
       },
       onCancel: () async {
@@ -185,7 +185,7 @@ Stream<GeoFenceResult> geoFenceUpdates(_GeoFenceUpdatesRequest request, bool sin
         subscriptionWithRequest.subscription.cancel();
 
         await _invokeChannelMethod(
-            _loggingTag,
+            'geofence result',
             _channel,
             'removeGeoFencingRequest',
             _Codec.encodeGeoFenceUpdatesRequest(request));
