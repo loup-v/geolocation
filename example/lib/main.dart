@@ -7,6 +7,7 @@ import 'package:geolocation/geolocation.dart';
 import 'tab_location.dart';
 import 'tab_track.dart';
 import 'tab_settings.dart';
+import 'tab_geofence.dart';
 
 void main() => runApp(new MyApp());
 
@@ -35,8 +36,8 @@ class _MyAppState extends State<MyApp> {
               icon: new Icon(Icons.location_searching),
             ),
             new BottomNavigationBarItem(
-              title: new Text('Geocode'),
-              icon: new Icon(Icons.location_city),
+              title: new Text('GeoFence'),
+              icon: new Icon(Icons.layers),
             ),
             new BottomNavigationBarItem(
               title: new Text('Settings'),
@@ -52,6 +53,8 @@ class _MyAppState extends State<MyApp> {
                   return new TabLocation();
                 case 1:
                   return new TabTrack();
+                case 2:
+                  return new TabGeoFence();
                 case 3:
                   return new TabSettings();
                 default:
