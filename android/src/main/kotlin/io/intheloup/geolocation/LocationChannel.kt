@@ -44,10 +44,8 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
         }
     }
 
-    private fun removeLocationUpdatesRequest(request: LocationUpdatesRequest) {
-        launch(UI) {
-            locationClient.removeLocationUpdatesRequest(request)
-        }
+    private fun removeLocationUpdatesRequest(id: Int) {
+        locationClient.removeLocationUpdatesRequest(id)
     }
 
 
@@ -59,7 +57,7 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
             "requestLocationPermission" -> requestLocationPermission(Codec.decodePermission(call.arguments), result)
             "lastKnownLocation" -> lastKnownLocation(Codec.decodePermission(call.arguments), result)
             "addLocationUpdatesRequest" -> addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(call.arguments))
-            "removeLocationUpdatesRequest" -> removeLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(call.arguments))
+            "removeLocationUpdatesRequest" -> removeLocationUpdatesRequest(Codec.decodeInt(call.arguments))
             else -> result.notImplemented()
         }
     }

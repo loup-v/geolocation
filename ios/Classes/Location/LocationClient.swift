@@ -62,12 +62,12 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
       self.locationUpdatesRequests.append(request)
       self.updateRunningRequest()
     }, failure: { result in
-      self.locationUpdatesCallback!(result)
+      self.locationUpdatesCallback?(result)
     })
   }
   
-  func removeLocationUpdates(request: LocationUpdatesRequest) {
-    guard let index = locationUpdatesRequests.index(where: { $0.id == request.id }) else {
+  func removeLocationUpdates(requestId: Int) {
+    guard let index = locationUpdatesRequests.index(where: { $0.id == requestId }) else {
       return
     }
     
@@ -203,7 +203,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-    locationUpdatesCallback!(Result<[Location]>.failure(of: .runtime, message: error.localizedDescription))
+    locationUpdatesCallback?(Result<[Location]>.failure(of: .runtime, message: error.localizedDescription))
   }
   
   struct Callback<T, E> {

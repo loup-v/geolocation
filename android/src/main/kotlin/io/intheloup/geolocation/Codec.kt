@@ -20,6 +20,9 @@ object Codec {
     fun encodeResult(result: Result): String =
             moshi.adapter(Result::class.java).toJson(result)
 
+    fun decodeInt(arguments: Any?): Int =
+            arguments!! as Int
+
     fun decodePermission(arguments: Any?): Permission =
             Permission.Adapter().fromJson(arguments!! as String)
 

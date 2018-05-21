@@ -35,7 +35,7 @@ class LocationChannel {
     case "addLocationUpdatesRequest":
       addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(from: call.arguments))
     case "removeLocationUpdatesRequest":
-      removeLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(from: call.arguments))
+      removeLocationUpdatesRequest(Codec.decodeInt(from: call.arguments))
     default:
       result(FlutterMethodNotImplemented)
     }
@@ -61,8 +61,8 @@ class LocationChannel {
     locationClient.addLocationUpdates(request: request)
   }
   
-  private func removeLocationUpdatesRequest(_ request: LocationUpdatesRequest) {
-    locationClient.removeLocationUpdates(request: request)
+  private func removeLocationUpdatesRequest(_ id: Int) {
+    locationClient.removeLocationUpdates(requestId: id)
   }
   
   

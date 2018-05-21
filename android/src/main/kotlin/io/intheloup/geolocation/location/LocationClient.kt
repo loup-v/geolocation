@@ -111,8 +111,8 @@ class LocationClient(private val activity: Activity) {
         updateLocationRequest()
     }
 
-    suspend fun removeLocationUpdatesRequest(request: LocationUpdatesRequest) {
-        locationUpdatesRequests.removeAll { it.id == request.id }
+    fun removeLocationUpdatesRequest(id: Int) {
+        locationUpdatesRequests.removeAll { it.id == id }
         updateLocationRequest()
     }
 
