@@ -59,6 +59,6 @@ class GeolocationPlugin(val registrar: Registrar) {
     }
 
     object Intents {
-        const val LocationPermissionRequestId = 138978923
+        const val LocationPermissionRequestId = 12234
     }
 }
