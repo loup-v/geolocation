@@ -5,8 +5,9 @@
 
 import Foundation
 import CoreLocation
+import streams_channel
 
-class LocationChannel {
+class LocationChannels {
   
   private let locationClient: LocationClient
   private let locationUpdatesHandler: LocationUpdatesHandler

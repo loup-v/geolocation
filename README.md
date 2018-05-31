@@ -8,7 +8,7 @@ Features:
 
 * Manual and automatic location permission management
 * Current one-shot location
-* Continuous location updates with foreground and background options 
+* Continuous location updates with foreground and background options
 
 The plugin is under active development and the following features are planned soon:
 
@@ -34,12 +34,12 @@ dependencies:
 ```
 
 **Note:** There is a known issue for integrating swift written plugin into Flutter project created with Objective-C template.
-See issue [Flutter#16049](https://github.com/flutter/flutter/issues/16049) for help on integration. 
+See issue [Flutter#16049](https://github.com/flutter/flutter/issues/16049) for help on integration.
 
 
 ### Permission
 
-Android and iOS require to declare the location permission in a configuration file. 
+Android and iOS require to declare the location permission in a configuration file.
 
 #### For iOS
 
@@ -57,7 +57,7 @@ You need to declare the description for the desired permission in `ios/Runner/In
   <string>Reason why app needs location</string>
   <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
   <string>Reason why app needs location</string>
-  
+
   <!-- additionally for iOS 9/10, if you need always permission -->
   <key>NSLocationAlwaysUsageDescription</key>
   <string>Reason why app needs location</string>
@@ -79,8 +79,8 @@ You need to declare one of the two permissions in `android/app/src/main/AndroidM
   <!-- or -->
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 </manifest>
-``` 
-  
+```
+
 Note that `ACCESS_FINE_LOCATION` permission includes `ACCESS_COARSE_LOCATION`.
 
 
@@ -102,13 +102,13 @@ if(result.isSuccessful) {
 } else {
   // location service is not enabled, restricted, or location permission is denied
 }
-``` 
+```
 
 ### Request location permission
 
 On Android (api 23+) and iOS, geolocation needs to request permission at runtime.
 
-_Note: You are not required to request permission manually. 
+_Note: You are not required to request permission manually.
 Geolocation plugin will request permission automatically if it's needed, when you make a location request._
 
 API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/requestLocationPermission.html
@@ -123,9 +123,9 @@ if(result.isSuccessful) {
   // location permission is granted (or was already granted before making the request)
 } else {
   // location permission is not granted
-  // user might have denied, but it's also possible that location service is not enabled, restricted, and user never saw the permission request dialog 
+  // user might have denied, but it's also possible that location service is not enabled, restricted, and user never saw the permission request dialog
 }
-``` 
+```
 
 
 ### Get the current one-shot location
@@ -167,7 +167,7 @@ API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geol
 StreamSubscription<LocationResult> subscription = Geolocation.locationUpdates(
     accuracy: LocationAccuracy.best,
     displacementFilter: 10.0, // in meters
-    inBackground: true, // by default, location updates will pause when app is inactive (in background). Set to `true` to continue updates in background. 
+    inBackground: true, // by default, location updates will pause when app is inactive (in background). Set to `true` to continue updates in background.
   )
   .listen((result) {
     if(result.isSuccessful) {
@@ -191,7 +191,7 @@ API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geol
 LocationResult result = await Geolocation.lastKnownLocation();
 
 if (result.isSuccessful) {
-  // location request successful, location is guaranteed to not be null 
+  // location request successful, location is guaranteed to not be null
   double lat = result.location.latitude;
   double lng = result.location.longitude;
 } else {
@@ -204,7 +204,7 @@ if (result.isSuccessful) {
       break;
     case GeolocationResultErrorType.serviceDisabled:
       // location services disabled on device
-      // might be that GPS is turned off, or parental control (android) 
+      // might be that GPS is turned off, or parental control (android)
       break;
     case GeolocationResultErrorType.permissionDenied:
       // user denied location permission request
@@ -225,7 +225,7 @@ if (result.isSuccessful) {
     break;
   }
 }
-``` 
+```
 
 
 ## Author
