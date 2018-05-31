@@ -1,7 +1,7 @@
 ## [0.2.1]
 
 * Replace `requestPermission(permission)` named parameter by positional
- 
+
 
 ## [0.2.0]
 
