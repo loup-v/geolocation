@@ -144,7 +144,7 @@ https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation
 // best option for most cases
 StreamSubscription<LocationResult> subscription = Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
   if(result.isSuccessful) {
-    Double latitude = result.location.latitude;
+    double latitude = result.location.latitude;
     // todo with result
   }
 });
