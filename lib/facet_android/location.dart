@@ -44,4 +44,12 @@ class LocationOptionsAndroid {
 
   /// Always `1` in single location request
   final int numUpdates;
+
+  Map toJson() => {
+    'interval': interval,
+    'fastestInterval': fastestInterval,
+    'expirationTime': expirationTime,
+    'expirationDuration': expirationDuration,
+    'maxWaitTime': maxWaitTime
+  };
 }
