@@ -10,6 +10,22 @@ class _Codec {
   static LocationResult decodeLocationResult(String data) =>
       _JsonCodec.locationResultFromJson(json.decode(data));
 
+  static GeofenceEventResult decodeGeofenceEventResult(String data) =>
+      _JsonCodec.geofenceEventResultFromJson(json.decode(data));
+
+  static String encodeGeofenceRegion(GeofenceRegion geofenceRegion) =>
+      json.encode(_JsonCodec.geofenceRegionToJson(geofenceRegion));
+
+  static GeofenceRegion decodeGeofenceRegion(String data) =>
+      _JsonCodec.geofenceRegionFromJson(json.decode(data));
+
+  static List<GeofenceRegion> decodeGeofenceRegions(String data) {
+    final List<dynamic> elements = json.decode(data);
+    return elements
+        .map((element) => _JsonCodec.geofenceRegionFromJson(element))
+        .toList();
+  }
+
   static String encodeLocationPermission(LocationPermission permission) =>
       platformSpecific(
         android: _Codec.encodeEnum(permission.android),
@@ -26,6 +42,10 @@ class _Codec {
 
   static String encodeEnum(dynamic value) {
     return value.toString().split('.').last;
+  }
+
+  static T decodeEnum<T>(String data, List<T> possibleValues) {
+    return possibleValues.firstWhere((v) => describeEnum(v) == data);
   }
 
   static String platformSpecific({
@@ -87,11 +107,20 @@ class _JsonCodec {
             : null,
       );
 
-  static Location locationFromJson(Map<String, dynamic> json) => new Location._(
-        _Codec.parseJsonNumber(json['latitude']),
-        _Codec.parseJsonNumber(json['longitude']),
-        _Codec.parseJsonNumber(json['altitude']),
+  static Location locationFromJson(Map<String, dynamic> json) => new Location(
+        latitude: _Codec.parseJsonNumber(json['latitude']),
+        longitude: _Codec.parseJsonNumber(json['longitude']),
+        altitude: _Codec.parseJsonNumber(json['altitude']),
       );
+
+  static Map<String, dynamic> geofenceRegionToJson(
+          GeofenceRegion geofenceRegion) =>
+      {
+        'id': geofenceRegion.id,
+        'region': regionToJson(geofenceRegion.region),
+        'notifyOnEntry': geofenceRegion.notifyOnEntry,
+        'notifyOnExit': geofenceRegion.notifyOnExit,
+      };
 
   static Map<String, dynamic> locationUpdatesRequestToJson(
           _LocationUpdatesRequest request) =>
@@ -110,4 +139,39 @@ class _JsonCodec {
           ios: _Codec.encodeEnum(request.accuracy.ios),
         ),
       };
+
+  static Map<String, dynamic> regionToJson(Region region) => {
+        'radius': region.radius,
+        'center': locationToJson(region.center),
+      };
+
+  static Map<String, dynamic> locationToJson(Location location) => {
+        'latitude': location.latitude,
+        'longitude': location.longitude,
+        'altitude': location.altitude
+      };
+
+  static GeofenceEventResult geofenceEventResultFromJson(
+          Map<String, dynamic> json) =>
+      new GeofenceEventResult._(
+          json['isSuccessful'],
+          json['error'] != null ? resultErrorFromJson(json['error']) : null,
+          json['data'] != null ? geofenceEventFromJson(json['data']) : null);
+
+  static GeofenceEvent geofenceEventFromJson(Map<String, dynamic> json) =>
+      new GeofenceEvent._(
+          _Codec.decodeEnum(json['type'], GeofenceEventType.values),
+          _JsonCodec.geofenceRegionFromJson(json['geofenceRegion']));
+
+  static GeofenceRegion geofenceRegionFromJson(Map<String, dynamic> json) =>
+      new GeofenceRegion(
+        region: _JsonCodec.regionFromJson(json['region']),
+        id: json['id'],
+        notifyOnEntry: json['notifyOnEntry'],
+        notifyOnExit: json['notifyOnExit'],
+      );
+
+  static Region regionFromJson(Map<String, dynamic> json) => new Region(
+      center: _JsonCodec.locationFromJson(json['center']),
+      radius: _Codec.parseJsonNumber(json['radius']));
 }

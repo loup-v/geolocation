@@ -9,7 +9,7 @@ import CoreLocation
 class LocationClient : NSObject, CLLocationManagerDelegate {
   
   private let locationManager = CLLocationManager()
-  private var permissionCallbacks: Array<Callback<Void, Void>> = []
+  private var permissionCallbacks: Array<(Permission, Callback<Void, Void>)> = []
   
   private var locationUpdatesCallback: LocationUpdatesCallback? = nil
   private var locationUpdatesRequests: Array<LocationUpdatesRequest> = []
@@ -20,6 +20,8 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   private var hasInBackgroundLocationRequest: Bool {
     return !locationUpdatesRequests.filter { $0.inBackground == true }.isEmpty
   }
+  
+  private var geofenceUpdatesCallback: GeofenceUpdatesCallback? = nil
   
   private var isPaused = false
   
@@ -54,6 +56,34 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     }, failure: callback)
   }
   
+  // Geofencing API
+  
+  func addGeofenceRegion(_ region: GeofenceRegion) {
+    if CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
+      locationManager.startMonitoring(for: region.clRegion)
+    } else {
+      _ = 4
+      //TODO
+    }
+  }
+  
+  func removeGeofenceRegion(_ region: GeofenceRegion) {
+    locationManager.stopMonitoring(for: region.clRegion)
+  }
+  
+  func geofenceRegions() -> [GeofenceRegion] {
+    return Array(locationManager.monitoredRegions).sorted(by: { $0.identifier < $1.identifier }).map({ GeofenceRegion(from: $0 as! CLCircularRegion) })
+  }
+  
+  func registerGeofenceUpdates(callback: @escaping GeofenceUpdatesCallback) {
+    precondition(geofenceUpdatesCallback == nil, "trying to register a 2nd location geofence callback")
+    geofenceUpdatesCallback = callback
+  }
+  
+  func deregisterGeofenceUpdatesCallback() {
+    precondition(geofenceUpdatesCallback != nil, "trying to deregister a non-existent geofence updates callback")
+    geofenceUpdatesCallback = nil
+  }
   
   // Updates API
   
@@ -144,7 +174,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   
   // Service status
   
-  private func runWithValidServiceStatus<T>(with permission: Permission, success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
+  func runWithValidServiceStatus<T>(with permission: Permission, success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
     let status: ServiceStatus<T> = currentServiceStatus(with: permission)
     
     if status.isReady {
@@ -155,7 +185,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
           success: { _ in success() },
           failure: { _ in failure(Result<T>.failure(of: .permissionDenied)) }
         )
-        permissionCallbacks.append(callback)
+        permissionCallbacks.append((permission, callback))
         locationManager.requestAuthorization(for: permission)
       } else {
         failure(status.failure!)
@@ -168,7 +198,8 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
       return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .serviceDisabled))
     }
     
-    switch CLLocationManager.authorizationStatus() {
+    let status = CLLocationManager.authorizationStatus()
+    switch status {
     case .notDetermined:
       guard locationManager.isPermissionDeclared(for: permission) else {
         return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .runtime, message: "Missing location usage description values in Info.plist. See readme for details.", fatal: true))
@@ -179,7 +210,13 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
       return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .permissionDenied))
     case .restricted:
       return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .serviceDisabled))
-    case .authorizedWhenInUse, .authorizedAlways:
+    case .authorizedWhenInUse:
+      if permission.statusIsSufficient(status) {
+        return ServiceStatus<T>(isReady: true, needsAuthorization: nil, failure: nil)
+      } else {
+        return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .permissionDenied))
+      }
+    case .authorizedAlways:
       return ServiceStatus<T>(isReady: true, needsAuthorization: nil, failure: nil)
     }
   }
@@ -188,8 +225,8 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   // CLLocationManagerDelegate
   
   public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-    permissionCallbacks.forEach { action in
-      if status == .authorizedAlways || status == .authorizedWhenInUse {
+    permissionCallbacks.forEach { (permission, action) in
+      if permission.statusIsSufficient(status) {
         action.success(())
       } else {
         action.failure(())
@@ -206,12 +243,36 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     locationUpdatesCallback?(Result<[Location]>.failure(of: .runtime, message: error.localizedDescription))
   }
   
+  public func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+    NSLog("didEnterRegion")
+    guard let region = region as? CLCircularRegion else {
+      NSLog("Expected circular region, ignoring event.")
+      return
+    }
+    
+    let geofenceEvent = GeofenceEvent(region: region, type: .entered)
+    geofenceUpdatesCallback?(Result<GeofenceEvent>.success(with: geofenceEvent))
+  }
+  
+  public func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+    NSLog("didExitRegion")
+    guard let region = region as? CLCircularRegion else {
+      NSLog("Expected circular region, ignoring event.")
+      return
+    }
+    
+    let geofenceEvent = GeofenceEvent(region: region, type: .exited)
+    geofenceUpdatesCallback?(Result<GeofenceEvent>.success(with: geofenceEvent))
+  }
+    
   struct Callback<T, E> {
     let success: (T) -> Void
     let failure: (E) -> Void
   }
   
   typealias LocationUpdatesCallback = (Result<[Location]>) -> Void
+  
+  typealias GeofenceUpdatesCallback = (Result<GeofenceEvent>) -> Void
   
   struct ServiceStatus<T: Codable> {
     let isReady: Bool

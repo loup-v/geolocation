@@ -16,10 +16,9 @@ part of geolocation;
 //
 //  * Subscriptions share a single location request on the platform but each subscriptions must be independent.
 //    A single location subscription should be closed after a single result was listened to while a continuous update subscription will continue
-//    until owner cancels it.
+//    until owner cancels it.e
 class _LocationChannel {
-  static const MethodChannel _channel =
-      const MethodChannel('geolocation/location');
+  final MethodChannel _channel;
 
   static const EventChannel _updatesChannel =
       const EventChannel('geolocation/locationUpdates');
@@ -33,6 +32,8 @@ class _LocationChannel {
   });
 
   final List<_LocationUpdatesSubscription> _updatesSubscriptions = [];
+
+  _LocationChannel(this._channel);
 
   Future<GeolocationResult> isLocationOperational(
       LocationPermission permission) async {

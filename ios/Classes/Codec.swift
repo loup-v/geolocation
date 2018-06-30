@@ -9,8 +9,8 @@ struct Codec {
   private static let jsonEncoder = JSONEncoder()
   private static let jsonDecoder = JSONDecoder()
   
-  static func encode<T>(result: Result<T>) -> String {
-    return String(data: try! jsonEncoder.encode(result), encoding: .utf8)!
+  static func encode<T>(_ value: T) -> String where T: Encodable {
+    return String(data: try! jsonEncoder.encode(value), encoding: .utf8)!
   }
   
   static func decodeInt(from arguments: Any?) -> Int {
@@ -23,5 +23,9 @@ struct Codec {
   
   static func decodeLocationUpdatesRequest(from arguments: Any?) -> LocationUpdatesRequest {
     return try! jsonDecoder.decode(LocationUpdatesRequest.self, from: (arguments as! String).data(using: .utf8)!)
+  }
+  
+  static func decodeGeofenceRegion(from arguments: Any?) -> GeofenceRegion {
+    return try! jsonDecoder.decode(GeofenceRegion.self, from: (arguments as! String).data(using: .utf8)!)
   }
 }

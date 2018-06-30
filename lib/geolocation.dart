@@ -13,6 +13,8 @@ import 'package:flutter/services.dart';
 
 part 'channel/codec.dart';
 
+part 'channel/geofence_channel.dart';
+
 part 'channel/helper.dart';
 
 part 'channel/location_channel.dart';
@@ -24,6 +26,8 @@ part 'data/location.dart';
 part 'data/location_result.dart';
 
 part 'data/permission.dart';
+
+part 'data/region.dart';
 
 part 'data/result.dart';
 
@@ -212,10 +216,33 @@ class Geolocation {
         displacementFilter,
       ));
 
+  static Stream<GeofenceEventResult> get geofenceUpdates {
+    return _geofenceChannel._geofenceUpdates;
+  }
+
+  static void addGeofenceRegion(GeofenceRegion region) {
+    return _geofenceChannel.addGeofenceRegion(region);
+  }
+
+  static void removeGeofenceRegion(GeofenceRegion region) {
+    return _geofenceChannel.removeGeofenceRegion(region);
+  }
+
+  static Future<List<GeofenceRegion>> geofenceRegions() {
+    return _geofenceChannel.geofenceRegions();
+  }
+
   /// Activate verbose logging for debugging purposes.
   static bool loggingEnabled = false;
 
-  static final _LocationChannel _locationChannel = new _LocationChannel();
+  static const MethodChannel _channel =
+      const MethodChannel('geolocation/location');
+
+  static final _LocationChannel _locationChannel =
+      new _LocationChannel(_channel);
+
+  static final _GeofenceChannel _geofenceChannel =
+      new _GeofenceChannel(_channel);
 }
 
 class GeolocationException implements Exception {

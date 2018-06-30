@@ -4,7 +4,8 @@
 part of geolocation;
 
 class Location {
-  Location._(this.latitude, this.longitude, this.altitude);
+  Location(
+      {@required this.latitude, @required this.longitude, this.altitude = 0.0});
 
   /// Latitude in degrees
   final double latitude;

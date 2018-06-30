@@ -4,6 +4,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocation/geolocation.dart';
+import 'package:geolocation_example/tab_geofence.dart';
 import 'tab_location.dart';
 import 'tab_track.dart';
 import 'tab_settings.dart';
@@ -25,6 +26,7 @@ class _MyAppState extends State<MyApp> {
     return new MaterialApp(
       home: new CupertinoTabScaffold(
         tabBar: new CupertinoTabBar(
+          currentIndex: 2,
           items: <BottomNavigationBarItem>[
             new BottomNavigationBarItem(
               title: new Text('Current'),
@@ -33,6 +35,10 @@ class _MyAppState extends State<MyApp> {
             new BottomNavigationBarItem(
               title: new Text('Track'),
               icon: new Icon(Icons.location_searching),
+            ),
+            new BottomNavigationBarItem(
+              title: new Text('Geofence'),
+              icon: new Icon(Icons.filter_tilt_shift),
             ),
             new BottomNavigationBarItem(
               title: new Text('Geocode'),
@@ -52,7 +58,9 @@ class _MyAppState extends State<MyApp> {
                   return new TabLocation();
                 case 1:
                   return new TabTrack();
-                case 3:
+                case 2:
+                  return new TabGeofence();
+                case 4:
                   return new TabSettings();
                 default:
                   return new Container(
