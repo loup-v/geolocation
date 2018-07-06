@@ -244,7 +244,6 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   public func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
-    NSLog("didEnterRegion")
     guard let region = region as? CLCircularRegion else {
       NSLog("Expected circular region, ignoring event.")
       return
@@ -255,7 +254,6 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   public func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-    NSLog("didExitRegion")
     guard let region = region as? CLCircularRegion else {
       NSLog("Expected circular region, ignoring event.")
       return

@@ -18,6 +18,13 @@ class _TabGeofenceState extends State<TabGeofence> {
   List<GeofenceEventResult> _geofenceEventResults = [];
   StreamSubscription<GeofenceEventResult> _subscription;
   bool _isTracking = false;
+  List<GeofenceRegion> _geofenceRegions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _updateRegionsList();
+  }
 
   @override
   dispose() {
@@ -60,7 +67,7 @@ class _TabGeofenceState extends State<TabGeofence> {
         region: Region(
             center: Location(longitude: 10.0, latitude: 10.0), radius: 10.0));
     Geolocation.addGeofenceRegion(region);
-    print(await Geolocation.geofenceRegions());
+    _updateRegionsList();
   }
 
   _onRemovePressed() async {
@@ -71,7 +78,15 @@ class _TabGeofenceState extends State<TabGeofence> {
         region: Region(
             center: Location(longitude: 10.0, latitude: 10.0), radius: 10.0));
     Geolocation.removeGeofenceRegion(region);
-    print(await Geolocation.geofenceRegions());
+    final regions = await Geolocation.geofenceRegions();
+    print(regions);
+    _updateRegionsList();
+  }
+
+  _updateRegionsList() async {
+    _geofenceRegions = await Geolocation.geofenceRegions();
+    setState(() {
+    });
   }
 
   @override
@@ -84,12 +99,33 @@ class _TabGeofenceState extends State<TabGeofence> {
         onRemovePressed: _onRemovePressed,
       )
     ];
+    
+    if (_geofenceRegions.length != 0) {
+      children.add(ListTile(
+        title: Text(
+          "Active Geofence regions:",
+          style: Theme.of(context).textTheme.subhead,
+        ),
+      ));
+
+      children.addAll(ListTile.divideTiles(
+        context: context,
+        tiles: _geofenceRegions.map((geofenceRegion) {
+          return ListTile(
+            title: new Text("${geofenceRegion.id}"),
+            subtitle: Text("Latitude: ${geofenceRegion.region.center
+                .latitude}\nLongitude: ${geofenceRegion.region.center
+                .longitude}"),
+          );
+        }).toList(),
+      ));
+      children.add(Divider(height: 32.0,));
+    }
 
     children.addAll(ListTile.divideTiles(
       context: context,
-      tiles: _geofenceEventResults
-          .map((location) => new _Item(data: location))
-          .toList(),
+      tiles:
+          _geofenceEventResults.map((event) => new _Item(data: event)).toList(),
     ));
 
     return new Scaffold(
