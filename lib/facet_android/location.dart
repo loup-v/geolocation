@@ -50,6 +50,7 @@ class LocationOptionsAndroid {
     'fastestInterval': fastestInterval,
     'expirationTime': expirationTime,
     'expirationDuration': expirationDuration,
-    'maxWaitTime': maxWaitTime
+    'maxWaitTime': maxWaitTime,
+    'numUpdates': numUpdates
   };
 }
