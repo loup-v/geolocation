@@ -22,6 +22,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   private var geofenceUpdatesCallback: GeofenceUpdatesCallback? = nil
+  private var unobservedGeofenceEventQueue: [Result<GeofenceEvent>] = []
   
   private var isPaused = false
   
@@ -78,6 +79,13 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   func registerGeofenceUpdates(callback: @escaping GeofenceUpdatesCallback) {
     precondition(geofenceUpdatesCallback == nil, "trying to register a 2nd location geofence callback")
     geofenceUpdatesCallback = callback
+    
+    // send queued elements
+    for geofenceEvent in unobservedGeofenceEventQueue {
+      callback(geofenceEvent)
+    }
+    // reset list
+    unobservedGeofenceEventQueue = []
   }
   
   func deregisterGeofenceUpdatesCallback() {
@@ -250,7 +258,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     }
     
     let geofenceEvent = GeofenceEvent(region: region, type: .entered)
-    geofenceUpdatesCallback?(Result<GeofenceEvent>.success(with: geofenceEvent))
+    handleGeofenceEvent(geofenceEvent)
   }
   
   public func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
@@ -260,9 +268,17 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     }
     
     let geofenceEvent = GeofenceEvent(region: region, type: .exited)
-    geofenceUpdatesCallback?(Result<GeofenceEvent>.success(with: geofenceEvent))
+    handleGeofenceEvent(geofenceEvent)
   }
-    
+  
+  private func handleGeofenceEvent(_ geofenceEvent: GeofenceEvent) {
+    if let callback = geofenceUpdatesCallback {
+      callback(Result<GeofenceEvent>.success(with: geofenceEvent))
+    } else {
+      unobservedGeofenceEventQueue.append(Result<GeofenceEvent>.success(with: geofenceEvent))
+    }
+  }
+  
   struct Callback<T, E> {
     let success: (T) -> Void
     let failure: (E) -> Void

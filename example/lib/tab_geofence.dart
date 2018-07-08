@@ -8,6 +8,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:geolocation/geolocation.dart';
+import 'package:local_notifications/local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TabGeofence extends StatefulWidget {
   @override
@@ -19,11 +21,18 @@ class _TabGeofenceState extends State<TabGeofence> {
   StreamSubscription<GeofenceEventResult> _subscription;
   bool _isTracking = false;
   List<GeofenceRegion> _geofenceRegions = [];
+  SharedPreferences sharedPreferences;
 
   @override
-  void initState() {
+  initState() {
     super.initState();
     _updateRegionsList();
+    _initTracking();
+  }
+
+  _initTracking() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    _setTracking(sharedPreferences.getBool('isTracking') ?? _isTracking);
   }
 
   @override
@@ -32,31 +41,37 @@ class _TabGeofenceState extends State<TabGeofence> {
     _subscription.cancel();
   }
 
-  _onTogglePressed() {
-    if (_isTracking) {
-      setState(() {
-        _isTracking = false;
-      });
+  _setTracking(shouldTrack) {
+    sharedPreferences.setBool('isTracking', shouldTrack);
+    setState(() {
+      _isTracking = shouldTrack;
+    });
 
-      _subscription.cancel();
+    if (!_isTracking) {
+      _subscription?.cancel();
       _subscription = null;
     } else {
-      setState(() {
-        _isTracking = true;
-      });
-
       _subscription = Geolocation.geofenceUpdates.listen((result) {
+        LocalNotifications.createNotification(
+            title: result.geofenceEvent.geofenceRegion.id,
+            content: result.geofenceEvent.type.toString() + ' happened!',
+            id: 0);
         setState(() {
           _geofenceEventResults.insert(0, result);
         });
       });
 
       _subscription.onDone(() {
+        print('The Geolocation plugin requested to stop the geofence tracking');
         setState(() {
           _isTracking = false;
         });
       });
     }
+  }
+
+  _onTogglePressed() {
+    _setTracking(!_isTracking);
   }
 
   _onAddPressed() async {
@@ -85,8 +100,7 @@ class _TabGeofenceState extends State<TabGeofence> {
 
   _updateRegionsList() async {
     _geofenceRegions = await Geolocation.geofenceRegions();
-    setState(() {
-    });
+    setState(() {});
   }
 
   @override
@@ -99,7 +113,7 @@ class _TabGeofenceState extends State<TabGeofence> {
         onRemovePressed: _onRemovePressed,
       )
     ];
-    
+
     if (_geofenceRegions.length != 0) {
       children.add(ListTile(
         title: Text(
@@ -119,7 +133,9 @@ class _TabGeofenceState extends State<TabGeofence> {
           );
         }).toList(),
       ));
-      children.add(Divider(height: 32.0,));
+      children.add(Divider(
+        height: 32.0,
+      ));
     }
 
     children.addAll(ListTile.divideTiles(

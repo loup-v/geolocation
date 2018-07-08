@@ -2,6 +2,8 @@ name: geolocation_example
 description: Demonstrates how to use the geolocation plugin.
 
 dependencies:
+  shared_preferences:
+  local_notifications:
   flutter:
     sdk: flutter
 
