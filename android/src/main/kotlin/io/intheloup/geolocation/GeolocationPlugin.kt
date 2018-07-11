@@ -11,7 +11,7 @@ import io.intheloup.geolocation.location.LocationClient
 
 class GeolocationPlugin(val registrar: Registrar) {
 
-    private val locationClient = LocationClient(registrar.activity())
+    private val locationClient = LocationClient(registrar.activity(), registrar.context())
     private val locationChannel = LocationChannel(locationClient)
 
     init {

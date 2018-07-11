@@ -12,14 +12,20 @@ import io.intheloup.geolocation.location.LocationClient
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 
-class LocationChannel(private val locationClient: LocationClient) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
+class LocationChannel(private val locationClient: LocationClient) : MethodChannel.MethodCallHandler {
 
     fun register(plugin: GeolocationPlugin) {
+        val locationUpdatesHandler = LocationUpdatesHandler(locationClient)
+        val geofenceUpdatesHandler = GeofenceUpdatesHandler(locationClient)
+
         val methodChannel = MethodChannel(plugin.registrar.messenger(), "geolocation/location")
         methodChannel.setMethodCallHandler(this)
 
-        val eventChannel = EventChannel(plugin.registrar.messenger(), "geolocation/locationUpdates")
-        eventChannel.setStreamHandler(this)
+        val locationEventChannel = EventChannel(plugin.registrar.messenger(), "geolocation/locationUpdates")
+        locationEventChannel.setStreamHandler(locationUpdatesHandler)
+
+        val geofenceEventChannel = EventChannel(plugin.registrar.messenger(), "geolocation/geofenceUpdates")
+        geofenceEventChannel.setStreamHandler(geofenceUpdatesHandler)
     }
 
     private fun isLocationOperational(permission: Permission, result: MethodChannel.Result) {
@@ -48,7 +54,20 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
         locationClient.removeLocationUpdatesRequest(id)
     }
 
+    // geofencing
+    private fun addGeofenceRegion() {
+        locationClient.addGeofenceRegion()
+    }
 
+    private fun removeGeofenceRegion() {
+
+    }
+
+    private fun geofenceRegions(result: MethodChannel.Result) {
+        launch(UI) {
+            result.success("[]")
+        }
+    }
     // MethodChannel.MethodCallHandler
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -58,20 +77,40 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
             "lastKnownLocation" -> lastKnownLocation(Codec.decodePermission(call.arguments), result)
             "addLocationUpdatesRequest" -> addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(call.arguments))
             "removeLocationUpdatesRequest" -> removeLocationUpdatesRequest(Codec.decodeInt(call.arguments))
+//            "addGeofenceRegion" -> addGeofenceRegion(Codec.decodeGeofenceRegion(call.arguments))
+            "addGeofenceRegion" -> addGeofenceRegion()
+            "removeGeofenceRegion" -> removeGeofenceRegion()
+            "geofenceRegions" -> geofenceRegions(result)
             else -> result.notImplemented()
         }
     }
 
+    class LocationUpdatesHandler(private val locationClient: LocationClient) : EventChannel.StreamHandler {
 
-    // EventChannel.StreamHandler
+        // EventChannel.StreamHandler
+        override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+            locationClient.registerLocationUpdatesCallback { result ->
+                events.success(Codec.encodeResult(result))
+            }
+        }
 
-    override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
-        locationClient.registerLocationUpdatesCallback { result ->
-            events.success(Codec.encodeResult(result))
+        override fun onCancel(arguments: Any?) {
+            locationClient.deregisterLocationUpdatesCallback()
         }
     }
 
-    override fun onCancel(arguments: Any?) {
-        locationClient.deregisterLocationUpdatesCallback()
+    class GeofenceUpdatesHandler(private val locationClient: LocationClient) : EventChannel.StreamHandler {
+        // EventChannel.StreamHandler
+        override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+//            locationClient.registerGeofenceUpdatesCallback { result ->
+//                events.success(Codec.encodeResult(result))
+//            }
+        }
+
+        override fun onCancel(arguments: Any?) {
+//            locationClient.deregisterGeofenceUpdatesCallback()
+        }
     }
+
+
 }

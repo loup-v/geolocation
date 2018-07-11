@@ -16,10 +16,15 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:allowBackup="false"
+        android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Geolocation"
         tools:ignore="GoogleAppIndexingWarning">
+
+        <service
+            android:name="io.intheloup.geolocation.location.LocationClient$GeofenceTransitionsIntentService"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|fontScale|screenLayout|density"
