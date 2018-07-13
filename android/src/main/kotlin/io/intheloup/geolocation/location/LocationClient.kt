@@ -18,13 +18,13 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.location.*
 import io.flutter.plugin.common.PluginRegistry
 import io.intheloup.geolocation.GeolocationPlugin
-import io.intheloup.geolocation.data.LocationData
-import io.intheloup.geolocation.data.LocationUpdatesRequest
-import io.intheloup.geolocation.data.Permission
-import io.intheloup.geolocation.data.Result
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 import kotlin.coroutines.experimental.suspendCoroutine
+import com.google.android.gms.location.Geofence
+import io.intheloup.geolocation.GeofenceTransitionsIntentService
+import io.intheloup.geolocation.data.*
+
 
 @SuppressLint("MissingPermission")
 class LocationClient(
@@ -86,6 +86,54 @@ class LocationClient(
         }
     }
 
+
+    private suspend fun geofenceRegions(): Geofence? = suspendCoroutine { cont ->
+        cont.resume(Geofence.Builder()
+                // Set the request ID of the geofence. This is a string to identify this
+                // geofence.
+                .setRequestId("just an example")
+
+                // Set the circular region of this geofence.
+                .setCircularRegion(
+                        10.0,
+                        10.0,
+                        10.0f
+                )
+
+                // Set the expiration duration of the geofence. This geofence gets automatically
+                // removed after this period of time.
+                .setExpirationDuration(1000*60*60*99)
+
+                // Set the transition types of interest. Alerts are only generated for these
+                // transition. We track entry and exit transitions in this sample.
+                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
+
+                // Create the geofence.
+                .build())
+//        providerClient.lastLocation
+//                .addOnSuccessListener { location: Location? -> cont.resume(location) }
+//                .addOnFailureListener { cont.resumeWithException(it) }
+    }
+
+    suspend fun geofenceRegions(permission: Permission): Result {
+        val validity = validateServiceStatus(permission)
+        if (!validity.isValid) {
+            return validity.failure!!
+        }
+
+        val geofence = try {
+            geofenceRegions()
+        } catch (e: Exception) {
+            return Result.failure(Result.Error.Type.Runtime, message = e.message)
+        }
+
+        return if (geofence != null) {
+            Result.success(arrayOf(GeofenceData.from(geofence)))
+        } else {
+            Result.failure(Result.Error.Type.LocationNotFound)
+        }
+    }
+
     suspend fun lastKnownLocation(permission: Permission): Result {
         val validity = validateServiceStatus(permission)
         if (!validity.isValid) {
@@ -140,48 +188,7 @@ class LocationClient(
         PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    class GeofenceTransitionsIntentService : IntentService("GeofenceTransitionsIntentService Thread") {
 
-        override fun onHandleIntent(intent: Intent?) {
-
-            val geofencingEvent = GeofencingEvent.fromIntent(intent)
-            if (geofencingEvent.hasError()) {
-//                    val errorMessage = GeofenceErrorMessages.getErrorString(this,
-//                            geofencingEvent.errorCode)
-//                Log.e(TAG, errorMessage)
-                return
-            }
-
-            // Get the transition type.
-            val geofenceTransition = geofencingEvent.geofenceTransition
-
-            // Test that the reported transition was of interest.
-            if (
-                    geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
-                    geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT
-            ) {
-
-                // Get the geofences that were triggered. A single event can trigger
-                // multiple geofences.
-                val triggeringGeofences = geofencingEvent.triggeringGeofences
-
-                // Get the transition details as a String.
-//                val geofenceTransitionDetails = getGeofenceTransitionDetails(
-//                        this,
-//                        geofenceTransition,
-//                        triggeringGeofences
-//                )
-
-                // Send notification and log the transition details.
-//                    sendNotification(geofenceTransitionDetails)
-                Log.i("BLA", geofenceTransition.toString())
-            } else {
-                // Log the error.
-//                    Log.e(TAG, getString(R.string.geofence_transition_invalid_type,
-//                            geofenceTransition))
-            }
-        }
-    }
 
     /**
      * geofencing
@@ -201,7 +208,7 @@ class LocationClient(
 
                 // Set the expiration duration of the geofence. This geofence gets automatically
                 // removed after this period of time.
-                .setExpirationDuration(60 * 60 * 1000 * 99)
+                .setExpirationDuration(-1)
 
                 // Set the transition types of interest. Alerts are only generated for these
                 // transition. We track entry and exit transitions in this sample.
@@ -213,7 +220,7 @@ class LocationClient(
         val regions: List<Geofence> = mutableListOf(region)
 
         val request = GeofencingRequest.Builder().apply {
-            setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            setInitialTrigger(Geofence .GEOFENCE_TRANSITION_EXIT)
             addGeofences(regions)
         }.build()
 

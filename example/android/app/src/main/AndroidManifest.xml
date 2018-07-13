@@ -22,7 +22,7 @@
         tools:ignore="GoogleAppIndexingWarning">
 
         <service
-            android:name="io.intheloup.geolocation.location.LocationClient$GeofenceTransitionsIntentService"
+            android:name="io.intheloup.geolocation.GeofenceTransitionsIntentService"
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <activity
