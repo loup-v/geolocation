@@ -12,17 +12,29 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 part 'channel/codec.dart';
+
 part 'channel/helper.dart';
+
 part 'channel/location_channel.dart';
+
 part 'channel/param.dart';
+
 part 'data/location.dart';
+
 part 'data/location_result.dart';
+
 part 'data/permission.dart';
+
 part 'data/result.dart';
+
 part 'facet_android/location.dart';
+
 part 'facet_android/permission.dart';
+
 part 'facet_android/result.dart';
+
 part 'facet_ios/location.dart';
+
 part 'facet_ios/permission.dart';
 
 /// Provides an access to geolocation features of the underlying platform (Android or iOS).
@@ -111,12 +123,17 @@ class Geolocation {
     @required LocationAccuracy accuracy,
     bool inBackground = false,
     LocationPermission permission = const LocationPermission(),
+    LocationOptionsAndroid androidOptions =
+        LocationOptionsAndroid.defaultSingle,
+    LocationOptionsIOS iosOptions = const LocationOptionsIOS(),
   }) =>
       _locationChannel.locationUpdates(new _LocationUpdatesRequest(
         _LocationUpdateStrategy.single,
         permission,
         accuracy,
         inBackground,
+        androidOptions,
+        iosOptions,
       ));
 
   /// Requests the current "one-shot" [Location], using Android and iOS best practice mechanics.
@@ -145,12 +162,17 @@ class Geolocation {
     @required LocationAccuracy accuracy,
     bool inBackground = false,
     LocationPermission permission = const LocationPermission(),
+    LocationOptionsAndroid androidOptions =
+        LocationOptionsAndroid.defaultSingle,
+    LocationOptionsIOS iosOptions = const LocationOptionsIOS(),
   }) =>
       _locationChannel.locationUpdates(new _LocationUpdatesRequest(
         _LocationUpdateStrategy.current,
         permission,
         accuracy,
         inBackground,
+        androidOptions,
+        iosOptions,
       ));
 
   /// Requests continuous [Location] updates.
@@ -176,12 +198,17 @@ class Geolocation {
     double displacementFilter = 0.0,
     bool inBackground = false,
     LocationPermission permission = const LocationPermission(),
+    LocationOptionsAndroid androidOptions =
+        LocationOptionsAndroid.defaultContinuous,
+    LocationOptionsIOS iosOptions = const LocationOptionsIOS(),
   }) =>
       _locationChannel.locationUpdates(new _LocationUpdatesRequest(
         _LocationUpdateStrategy.continuous,
         permission,
         accuracy,
         inBackground,
+        androidOptions,
+        iosOptions,
         displacementFilter,
       ));
 

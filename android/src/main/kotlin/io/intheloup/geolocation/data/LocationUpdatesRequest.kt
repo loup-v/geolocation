@@ -12,7 +12,8 @@ class LocationUpdatesRequest(val id: Int,
                              val permission: Permission,
                              val accuracy: Priority,
                              val inBackground: Boolean,
-                             val displacementFilter: Float) {
+                             val displacementFilter: Float,
+                             val options: Options) {
 
 
     enum class Strategy {
@@ -28,4 +29,11 @@ class LocationUpdatesRequest(val id: Int,
                     value.toString().toLowerCase()
         }
     }
+
+    class Options(val interval: Long?,
+                  val fastestInterval: Long?,
+                  val expirationTime: Long?,
+                  val expirationDuration: Long?,
+                  val maxWaitTime: Long?,
+                  val numUpdates: Int?)
 }

@@ -8,7 +8,9 @@ class _LocationUpdatesRequest {
     this.strategy,
     this.permission,
     this.accuracy,
-    this.inBackground, [
+    this.inBackground,
+    this.androidOptions,
+    this.iosOptions, [
     this.displacementFilter = 0.0,
   ]) {
     assert(displacementFilter >= 0.0);
@@ -20,6 +22,8 @@ class _LocationUpdatesRequest {
   final LocationAccuracy accuracy;
   final bool inBackground;
   final double displacementFilter;
+  final LocationOptionsAndroid androidOptions;
+  final LocationOptionsIOS iosOptions;
 }
 
 enum _LocationUpdateStrategy { current, single, continuous }
