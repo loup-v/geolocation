@@ -9,12 +9,8 @@ struct Codec {
   private static let jsonEncoder = JSONEncoder()
   private static let jsonDecoder = JSONDecoder()
   
-  static func encode<T>(result: Result<T>) -> String {
+  static func encode(result: Result) -> String {
     return String(data: try! jsonEncoder.encode(result), encoding: .utf8)!
-  }
-  
-  static func decodeInt(from arguments: Any?) -> Int {
-    return arguments as! Int
   }
   
   static func decodePermission(from arguments: Any?) -> Permission {

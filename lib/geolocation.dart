@@ -14,7 +14,8 @@ import 'package:streams_channel/streams_channel.dart';
 
 part 'channel/codec.dart';
 part 'channel/helper.dart';
-part 'channel/location_channel.dart';
+part 'channel/json.dart';
+part 'channel/location_channels.dart';
 part 'channel/param.dart';
 part 'data/location.dart';
 part 'data/location_result.dart';

@@ -74,21 +74,7 @@ enum GeolocationResultErrorType {
   playServicesUnavailable,
 }
 
-GeolocationResultErrorType _mapResultErrorTypeJson(String jsonValue) {
-  switch (jsonValue) {
-    case 'runtime':
-      return GeolocationResultErrorType.runtime;
-    case 'locationNotFound':
-      return GeolocationResultErrorType.locationNotFound;
-    case 'permissionDenied':
-      return GeolocationResultErrorType.permissionDenied;
-    case 'serviceDisabled':
-      return GeolocationResultErrorType.serviceDisabled;
-    case 'playServicesUnavailable':
-      return GeolocationResultErrorType.playServicesUnavailable;
-    default:
-      assert(
-          false, 'cannot parse json to GeolocationResultErrorType: $jsonValue');
-      return null;
-  }
+enum GeolocationPermissionDeniedType {
+  fullyDenied,
+  restricted,
 }

@@ -31,25 +31,25 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   
   // One shot API
   
-  func isLocationOperational(with permission: Permission) -> Result<Bool> {
-    let status: ServiceStatus<Bool> = currentServiceStatus(with: permission)
-    return status.isReady ? Result<Bool>.success(with: true) : status.failure!
+  func isLocationOperational(with permission: Permission) -> Result {
+    let status: ServiceStatus = currentServiceStatus(with: permission)
+    return status.isReady ? Result.success(with: true) : status.failure!
   }
   
-  func requestLocationPermission(with permission: Permission, _ callback: @escaping (Result<Bool>) -> Void) {
+  func requestLocationPermission(with permission: Permission, _ callback: @escaping (Result) -> Void) {
     runWithValidServiceStatus(with: permission, success: {
-      callback(Result<Bool>.success(with: true))
+      callback(Result.success(with: true))
     }, failure: { result in
       callback(result)
     })
   }
   
-  func lastKnownLocation(with permission: Permission, _ callback: @escaping (Result<[Location]>) -> Void) {
+  func lastKnownLocation(with permission: Permission, _ callback: @escaping (Result) -> Void) {
     runWithValidServiceStatus(with: permission, success: {
       if let location = self.locationManager.location {
-        callback(Result<Location>.success(with: [Location(from: location)]))
+        callback(Result.success(with: [Location(from: location)]))
       } else {
-        callback(Result<Location>.failure(of: .locationNotFound))
+        callback(Result.failure(of: .locationNotFound))
       }
     }, failure: callback)
   }
@@ -144,8 +144,8 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   
   // Service status
   
-  private func runWithValidServiceStatus<T>(with permission: Permission, success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
-    let status: ServiceStatus<T> = currentServiceStatus(with: permission)
+  private func runWithValidServiceStatus(with permission: Permission, success: @escaping () -> Void, failure: @escaping (Result) -> Void) {
+    let status: ServiceStatus = currentServiceStatus(with: permission)
     
     if status.isReady {
       success()
@@ -153,7 +153,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
       if let permission = status.needsAuthorization {
         let callback = Callback<Void, Void>(
           success: { _ in success() },
-          failure: { _ in failure(Result<T>.failure(of: .permissionDenied)) }
+          failure: { _ in failure(Result.failure(of: .permissionDenied)) }
         )
         permissionCallbacks.append(callback)
         locationManager.requestAuthorization(for: permission)
@@ -163,24 +163,24 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     }
   }
   
-  private func currentServiceStatus<T>(with permission: Permission) -> ServiceStatus<T> {
+  private func currentServiceStatus(with permission: Permission) -> ServiceStatus {
     guard CLLocationManager.locationServicesEnabled() else {
-      return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .serviceDisabled))
+      return ServiceStatus(isReady: false, needsAuthorization: nil, failure: Result.failure(of: .serviceDisabled))
     }
     
     switch CLLocationManager.authorizationStatus() {
     case .notDetermined:
       guard locationManager.isPermissionDeclared(for: permission) else {
-        return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .runtime, message: "Missing location usage description values in Info.plist. See readme for details.", fatal: true))
+        return ServiceStatus(isReady: false, needsAuthorization: nil, failure: Result.failure(of: .runtime, message: "Missing location usage description values in Info.plist. See readme for details.", fatal: true))
       }
       
-      return ServiceStatus<T>(isReady: false, needsAuthorization: permission, failure: Result<T>.failure(of: .permissionDenied))
+      return ServiceStatus(isReady: false, needsAuthorization: permission, failure: Result.failure(of: .permissionDenied))
     case .denied:
-      return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .permissionDenied))
+      return ServiceStatus(isReady: false, needsAuthorization: nil, failure: Result.failure(of: .permissionDenied))
     case .restricted:
-      return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .serviceDisabled))
+      return ServiceStatus(isReady: false, needsAuthorization: nil, failure: Result.failure(of: .serviceDisabled))
     case .authorizedWhenInUse, .authorizedAlways:
-      return ServiceStatus<T>(isReady: true, needsAuthorization: nil, failure: nil)
+      return ServiceStatus(isReady: true, needsAuthorization: nil, failure: nil)
     }
   }
   
@@ -199,11 +199,11 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-    locationUpdatesCallback?(Result<[Location]>.success(with: locations.map { Location(from: $0) }))
+    locationUpdatesCallback?(Result.success(with: AnyEncodable(locations.map { Location(from: $0) })))
   }
   
   public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-    locationUpdatesCallback?(Result<[Location]>.failure(of: .runtime, message: error.localizedDescription))
+    locationUpdatesCallback?(Result.failure(of: .runtime, message: error.localizedDescription))
   }
   
   struct Callback<T, E> {
@@ -211,11 +211,11 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     let failure: (E) -> Void
   }
   
-  typealias LocationUpdatesCallback = (Result<[Location]>) -> Void
+  typealias LocationUpdatesCallback = (Result) -> Void
   
-  struct ServiceStatus<T: Codable> {
+  struct ServiceStatus {
     let isReady: Bool
     let needsAuthorization: Permission?
-    let failure: Result<T>?
+    let failure: Result?
   }
 }

@@ -5,17 +5,18 @@
 
 import Foundation
 
-struct Result<T: Codable> : Codable {
+struct Result : Encodable {
   let isSuccessful: Bool
-  let data: T?
+  let data: AnyEncodable?
   let error: ResultError?
+  let additionalInfo: AnyEncodable?
   
-  static func success <T> (with data: T) -> Result<T> {
-    return Result<T>(isSuccessful: true, data: data, error: nil)
+  static func success (with data: AnyEncodable) -> Result {
+    return Result(isSuccessful: true, data: data, error: nil)
   }
   
-  static func failure <T> (of type: ResultError.Kind, message: String? = nil, fatal: Bool? = nil) -> Result<T> {
-    return Result<T>(isSuccessful: false, data: nil, error: ResultError(type: type, message: message, fatal: fatal))
+  static func failure (of type: ResultError.Kind, message: String? = nil, fatal: Bool? = nil) -> Result {
+    return Result(isSuccessful: false, data: nil, error: ResultError(type: type, message: message, fatal: fatal))
   }
 }
 

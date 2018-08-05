@@ -35,8 +35,8 @@ class LocationChannels {
       lastKnownLocation(permission: Codec.decodePermission(from: call.arguments), on: result)
     case "addLocationUpdatesRequest":
       addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(from: call.arguments))
-    case "removeLocationUpdatesRequest":
-      removeLocationUpdatesRequest(Codec.decodeInt(from: call.arguments))
+//    case "removeLocationUpdatesRequest":
+//      removeLocationUpdatesRequest(Codec.decodeInt(from: call.arguments))
     default:
       result(FlutterMethodNotImplemented)
     }

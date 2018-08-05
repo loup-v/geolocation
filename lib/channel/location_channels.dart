@@ -8,7 +8,7 @@ class _LocationChannels {
       const MethodChannel('geolocation/location');
 
   static final StreamsChannel _updatesChannel =
-      new StreamsChannel('geolocation/locationUpdates');
+      new StreamsChannel('geolocation/locationUpdates', JSONMethodCodec());
 
   Future<GeolocationResult> isLocationOperational(
       LocationPermission permission) async {
@@ -36,7 +36,7 @@ class _LocationChannels {
 
   Stream<LocationResult> locationUpdates(_LocationUpdatesRequest request) {
     final json = _Codec.encodeLocationUpdatesRequest(request);
-    _log('start for: $json', tag: 'location updates');
+    _log('request: $json', tag: 'location updates');
     return _updatesChannel.receiveBroadcastStream(json).map((data) {
       _log('receive: $json', tag: 'location updates');
       return _Codec.decodeLocationResult(data);
