@@ -220,7 +220,7 @@ class LocationClient(
         val regions: List<Geofence> = mutableListOf(region)
 
         val request = GeofencingRequest.Builder().apply {
-            setInitialTrigger(Geofence .GEOFENCE_TRANSITION_EXIT)
+            setInitialTrigger(Geofence.GEOFENCE_TRANSITION_ENTER)
             addGeofences(regions)
         }.build()
 
