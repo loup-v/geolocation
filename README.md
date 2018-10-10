@@ -1,4 +1,4 @@
-# Geolocation
+# Geolocation (Forked and fixed)
 
 [![pub package](https://img.shields.io/pub/v/geolocation.svg)](https://pub.dartlang.org/packages/geolocation)
 
@@ -30,7 +30,9 @@ Add geolocation to your pubspec.yaml:
 
 ```yaml
 dependencies:
-  geolocation: ^0.2.1
+  geolocation:
+    git:
+      url: https://github.com/shehabic/geolocation
 ```
 
 **Note:** There is a known issue for integrating swift written plugin into Flutter project created with Objective-C template.
