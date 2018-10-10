@@ -41,6 +41,20 @@ class _Codec {
           'Unsupported platform: ${Platform.operatingSystem}');
     }
   }
+
+  static Map<String, dynamic> platformSpecificMap({
+    @required Map<String, dynamic> android,
+    @required Map<String, dynamic> ios,
+  }) {
+    if (Platform.isAndroid) {
+      return android;
+    } else if (Platform.isIOS) {
+      return ios;
+    } else {
+      throw new GeolocationException(
+        'Unsupported platform: ${Platform.operatingSystem}');
+    }
+  }
 }
 
 class _JsonCodec {
@@ -105,9 +119,9 @@ class _JsonCodec {
         ),
         'displacementFilter': request.displacementFilter,
         'inBackground': request.inBackground,
-        'options': _Codec.platformSpecific(
-          android: _Codec.encodeEnum(request.androidOptions),
-          ios: _Codec.encodeEnum(request.accuracy.ios),
+        'options': _Codec.platformSpecificMap(
+          android: request.androidOptions.toMap(),
+          ios: request.iosOptions.toMap(),
         ),
       };
 }

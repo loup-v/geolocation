@@ -6,14 +6,7 @@ part of geolocation;
 /// iOS values for [LocationAccuracy].
 ///
 /// Documentation: <https://developer.apple.com/documentation/corelocation/cllocationaccuracy>
-enum LocationAccuracyIOS {
-  threeKilometers,
-  kilometer,
-  hundredMeters,
-  nearestTenMeters,
-  best,
-  bestForNavigation
-}
+enum LocationAccuracyIOS { threeKilometers, kilometer, hundredMeters, nearestTenMeters, best, bestForNavigation }
 
 /// iOS specific options for location request.
 ///
@@ -26,11 +19,11 @@ class LocationOptionsIOS {
 
   final bool showsBackgroundLocationIndicator;
   final LocationActivityIOS activityType;
+
+  toMap() => {
+        'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
+        'activityType': activityType.toString().split('.').last
+      };
 }
 
-enum LocationActivityIOS {
-  other,
-  automotiveNavigation,
-  fitness,
-  otherNavigation
-}
+enum LocationActivityIOS { other, automotiveNavigation, fitness, otherNavigation }
