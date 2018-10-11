@@ -51,6 +51,16 @@ class _LocationChannel {
     return _Codec.decodeResult(response);
   }
 
+  Future<GeolocationResult> enableLocationServices() async {
+    final response = await _invokeChannelMethod(
+      _loggingTag,
+      _channel,
+      'enableLocationServices',
+      ''
+    );
+    return _Codec.decodeResult(response);
+  }
+
   Future<LocationResult> lastKnownLocation(
       LocationPermission permission) async {
     final response = await _invokeChannelMethod(_loggingTag, _channel,

@@ -32,6 +32,12 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
         }
     }
 
+    private fun enableLocationSettings(result: MethodChannel.Result) {
+        launch(UI) {
+            result.success(Codec.encodeResult(locationClient.enableLocationServices()))
+        }
+    }
+
     private fun lastKnownLocation(permission: Permission, result: MethodChannel.Result) {
         launch(UI) {
             result.success(Codec.encodeResult(locationClient.lastKnownLocation(permission)))
@@ -58,6 +64,7 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
             "lastKnownLocation" -> lastKnownLocation(Codec.decodePermission(call.arguments), result)
             "addLocationUpdatesRequest" -> addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(call.arguments))
             "removeLocationUpdatesRequest" -> removeLocationUpdatesRequest(Codec.decodeInt(call.arguments))
+            "enableLocationServices" -> enableLocationSettings(result)
             else -> result.notImplemented()
         }
     }

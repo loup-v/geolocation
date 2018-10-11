@@ -57,6 +57,14 @@ class Geolocation {
   }) =>
       _locationChannel.isLocationOperational(permission);
 
+  /// Requests enabling location services, if needed.
+  ///
+  /// If location services are already enabled, it returns successfully.
+  /// If location is not operational it'll ask to enable it and will fail right away
+  ///
+  ///
+  static Future<GeolocationResult> enableLocationServices() => _locationChannel.enableLocationServices();
+
   /// Requests the location [permission], if needed.
   ///
   /// If location permission is already granted, it returns successfully.

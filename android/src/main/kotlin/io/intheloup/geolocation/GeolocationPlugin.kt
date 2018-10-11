@@ -16,7 +16,7 @@ class GeolocationPlugin(val registrar: Registrar) {
 
     init {
         registrar.addRequestPermissionsResultListener(locationClient.permissionResultListener)
-
+        registrar.addActivityResultListener(locationClient.activityResultListener);
         registrar.activity().application.registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
             override fun onActivityPaused(activity: Activity?) {
                 locationClient.pause()
@@ -60,5 +60,6 @@ class GeolocationPlugin(val registrar: Registrar) {
 
     object Intents {
         const val LocationPermissionRequestId = 12234
+        const val EnableLocationSettingsRequestId = 12237
     }
 }
