@@ -119,7 +119,7 @@ class _JsonCodec {
         ),
         'displacementFilter': request.displacementFilter,
         'inBackground': request.inBackground,
-        'options': _Codec.platformSpecificMap(
+        'options': _Codec.platformSpecific(
           android: request.androidOptions,
           ios: request.iosOptions,
         ),

@@ -10,7 +10,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:streams_channel/streams_channel.dart';
 
 part 'channel/codec.dart';
 part 'channel/helper.dart';
@@ -212,7 +211,7 @@ class Geolocation {
   /// Activate verbose logging for debugging purposes.
   static bool loggingEnabled = false;
 
-  static final _LocationChannels _locationChannel = new _LocationChannels();
+    static final _LocationChannel _locationChannel = new _LocationChannel();
 }
 
 class GeolocationException implements Exception {
