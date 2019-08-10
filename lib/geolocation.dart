@@ -10,31 +10,20 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:streams_channel/streams_channel.dart';
 
 part 'channel/codec.dart';
-
 part 'channel/helper.dart';
-
 part 'channel/location_channel.dart';
-
 part 'channel/param.dart';
-
 part 'data/location.dart';
-
 part 'data/location_result.dart';
-
 part 'data/permission.dart';
-
 part 'data/result.dart';
-
 part 'facet_android/location.dart';
-
 part 'facet_android/permission.dart';
-
 part 'facet_android/result.dart';
-
 part 'facet_ios/location.dart';
-
 part 'facet_ios/permission.dart';
 
 /// Provides an access to geolocation features of the underlying platform (Android or iOS).
@@ -223,7 +212,7 @@ class Geolocation {
   /// Activate verbose logging for debugging purposes.
   static bool loggingEnabled = false;
 
-  static final _LocationChannel _locationChannel = new _LocationChannel();
+  static final _LocationChannels _locationChannel = new _LocationChannels();
 }
 
 class GeolocationException implements Exception {
