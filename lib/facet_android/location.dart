@@ -43,12 +43,12 @@ class LocationOptionsAndroid {
   /// Always `1` in single location request
   final int numUpdates;
 
-  Map<String, dynamic> toMap() => {
-        'interval': interval,
-        'fastestInterval': fastestInterval,
-        'expirationTime': expirationTime,
-        'expirationDuration': expirationDuration,
-        'maxWaitTime': maxWaitTime,
-        'numUpdates': numUpdates,
-      };
+  Map toJson() => {
+    'interval': interval,
+    'fastestInterval': fastestInterval,
+    'expirationTime': expirationTime,
+    'expirationDuration': expirationDuration,
+    'maxWaitTime': maxWaitTime,
+    'numUpdates': numUpdates
+  };
 }

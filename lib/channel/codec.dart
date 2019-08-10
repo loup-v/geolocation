@@ -28,9 +28,9 @@ class _Codec {
     return value.toString().split('.').last;
   }
 
-  static String platformSpecific({
-    @required String android,
-    @required String ios,
+  static dynamic platformSpecific({
+    @required dynamic android,
+    @required dynamic ios,
   }) {
     if (Platform.isAndroid) {
       return android;
@@ -120,8 +120,8 @@ class _JsonCodec {
         'displacementFilter': request.displacementFilter,
         'inBackground': request.inBackground,
         'options': _Codec.platformSpecificMap(
-          android: request.androidOptions.toMap(),
-          ios: request.iosOptions.toMap(),
+          android: request.androidOptions,
+          ios: request.iosOptions,
         ),
       };
 }
