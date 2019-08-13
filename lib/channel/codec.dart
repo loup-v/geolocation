@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-part of geolocation;
+part of new_geolocation;
 
 class _Codec {
   static GeolocationResult decodeResult(String data) =>
@@ -52,7 +52,7 @@ class _Codec {
       return ios;
     } else {
       throw new GeolocationException(
-        'Unsupported platform: ${Platform.operatingSystem}');
+          'Unsupported platform: ${Platform.operatingSystem}');
     }
   }
 }

@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-part of geolocation;
+part of new_geolocation;
 
 /// Contains the result from a binary (success or failed) request.
 ///

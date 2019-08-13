@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-part of geolocation;
+part of new_geolocation;
 
 /// Necessarily permission to work with location service on Android and iOS.
 ///

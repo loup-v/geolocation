@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-part of geolocation;
+part of new_geolocation;
 
 Future<String> _invokeChannelMethod(
     String tag, MethodChannel channel, String method,
@@ -15,7 +15,8 @@ Future<String> _invokeChannelMethod(
       exception: exception,
       stack: stack,
       library: 'geolocation',
-      context: DiagnosticsNode.message('while invoking ${channel.name}/$method'),
+      context:
+          DiagnosticsNode.message('while invoking ${channel.name}/$method'),
     ));
   }
 

@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-library geolocation;
+library new_geolocation;
 
 import 'dart:async';
 import 'dart:convert';
@@ -51,7 +51,8 @@ class Geolocation {
   /// If location is not operational it'll ask to enable it and will fail right away
   ///
   ///
-  static Future<GeolocationResult> enableLocationServices() => _locationChannel.enableLocationServices();
+  static Future<GeolocationResult> enableLocationServices() =>
+      _locationChannel.enableLocationServices();
 
   /// Requests the location [permission], if needed.
   ///
@@ -211,7 +212,7 @@ class Geolocation {
   /// Activate verbose logging for debugging purposes.
   static bool loggingEnabled = false;
 
-    static final _LocationChannel _locationChannel = new _LocationChannel();
+  static final _LocationChannel _locationChannel = new _LocationChannel();
 }
 
 class GeolocationException implements Exception {

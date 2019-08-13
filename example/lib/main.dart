@@ -3,7 +3,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocation/geolocation.dart';
+import 'package:new_geolocation/geolocation.dart';
 import 'tab_location.dart';
 import 'tab_track.dart';
 import 'tab_settings.dart';
@@ -60,7 +60,10 @@ class _MyAppState extends State<MyApp> {
                     child: new Center(
                       child: new FlatButton(
                         color: Colors.blue,
-                        child: Text("Enable location services", style: TextStyle(color: Colors.white),),
+                        child: Text(
+                          "Enable location services",
+                          style: TextStyle(color: Colors.white),
+                        ),
                         onPressed: enableLocationServices,
                       ),
                     ),
@@ -79,6 +82,5 @@ class _MyAppState extends State<MyApp> {
     }).catchError((e) {
       // Location Services Enablind Cancelled
     });
-
   }
 }

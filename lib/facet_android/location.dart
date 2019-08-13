@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-part of geolocation;
+part of new_geolocation;
 
 /// Android values for [LocationAccuracy].
 ///
@@ -22,14 +22,16 @@ class LocationOptionsAndroid {
   });
 
   /// Default options for single (one-shot) location request
-  static const LocationOptionsAndroid defaultSingle = const LocationOptionsAndroid(
+  static const LocationOptionsAndroid defaultSingle =
+      const LocationOptionsAndroid(
     interval: 5000,
     fastestInterval: 2500,
     expirationDuration: 30000,
   );
 
   /// Default options for continuous location request
-  static const LocationOptionsAndroid defaultContinuous = const LocationOptionsAndroid(
+  static const LocationOptionsAndroid defaultContinuous =
+      const LocationOptionsAndroid(
     interval: 5000,
     fastestInterval: 2500,
   );
@@ -44,11 +46,11 @@ class LocationOptionsAndroid {
   final int numUpdates;
 
   Map toJson() => {
-    'interval': interval,
-    'fastestInterval': fastestInterval,
-    'expirationTime': expirationTime,
-    'expirationDuration': expirationDuration,
-    'maxWaitTime': maxWaitTime,
-    'numUpdates': numUpdates
-  };
+        'interval': interval,
+        'fastestInterval': fastestInterval,
+        'expirationTime': expirationTime,
+        'expirationDuration': expirationDuration,
+        'maxWaitTime': maxWaitTime,
+        'numUpdates': numUpdates
+      };
 }

@@ -1,12 +1,19 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-part of geolocation;
+part of new_geolocation;
 
 /// iOS values for [LocationAccuracy].
 ///
 /// Documentation: <https://developer.apple.com/documentation/corelocation/cllocationaccuracy>
-enum LocationAccuracyIOS { threeKilometers, kilometer, hundredMeters, nearestTenMeters, best, bestForNavigation }
+enum LocationAccuracyIOS {
+  threeKilometers,
+  kilometer,
+  hundredMeters,
+  nearestTenMeters,
+  best,
+  bestForNavigation
+}
 
 /// iOS specific options for location request.
 ///
@@ -21,9 +28,9 @@ class LocationOptionsIOS {
   final LocationActivityIOS activityType;
 
   Map toJson() => {
-    'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
-    'activityType': _Codec.encodeEnum(activityType)
-  };
+        'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
+        'activityType': _Codec.encodeEnum(activityType)
+      };
 
   toMap() => {
         'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
@@ -31,4 +38,9 @@ class LocationOptionsIOS {
       };
 }
 
-enum LocationActivityIOS { other, automotiveNavigation, fitness, otherNavigation }
+enum LocationActivityIOS {
+  other,
+  automotiveNavigation,
+  fitness,
+  otherNavigation
+}

@@ -8,7 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:geolocation/geolocation.dart';
+import 'package:new_geolocation/geolocation.dart';
 
 class TabLocation extends StatefulWidget {
   @override

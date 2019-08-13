@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-part of geolocation;
+part of new_geolocation;
 
 // Location updates communicate with platform plugin through a mix of [EventChannel] and [MethodChannel].
 // Reasons:
@@ -19,10 +19,10 @@ part of geolocation;
 //    until owner cancels it.
 class _LocationChannel {
   static const MethodChannel _channel =
-      const MethodChannel('geolocation/location');
+      const MethodChannel('new_geolocation/location');
 
   static const EventChannel _updatesChannel =
-      const EventChannel('geolocation/locationUpdates');
+      const EventChannel('new_geolocation/locationUpdates');
 
   static const String _loggingTag = 'location result';
 
@@ -53,11 +53,7 @@ class _LocationChannel {
 
   Future<GeolocationResult> enableLocationServices() async {
     final response = await _invokeChannelMethod(
-      _loggingTag,
-      _channel,
-      'enableLocationServices',
-      ''
-    );
+        _loggingTag, _channel, 'enableLocationServices', '');
     return _Codec.decodeResult(response);
   }
 
@@ -116,8 +112,7 @@ class _LocationChannel {
         );
       },
       onCancel: () {
-        _log('remove location updates [id=${subscription
-            .requestId}]');
+        _log('remove location updates [id=${subscription.requestId}]');
         subscription.subscription.cancel();
         _updatesSubscriptions.remove(subscription);
 
