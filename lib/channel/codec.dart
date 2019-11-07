@@ -23,6 +23,10 @@ class _Codec {
   static double parseJsonNumber(dynamic value) {
     return value.runtimeType == int ? (value as int).toDouble() : value;
   }
+  
+  static bool parseJsonBoolean(dynamic value) {
+    return value.toLowerCase() == 'true';
+  }
 
   static String encodeEnum(dynamic value) {
     return value.toString().split('.').last;
@@ -105,6 +109,7 @@ class _JsonCodec {
         _Codec.parseJsonNumber(json['latitude']),
         _Codec.parseJsonNumber(json['longitude']),
         _Codec.parseJsonNumber(json['altitude']),
+        _Codec.parseJsonBoolean(json['isMocked']),
       );
 
   static Map<String, dynamic> locationUpdatesRequestToJson(
