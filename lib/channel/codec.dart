@@ -25,7 +25,7 @@ class _Codec {
   }
   
   static bool parseJsonBoolean(dynamic value) {
-    return value.toLowerCase() == 'true';
+    return value.toString() == 'true';
   }
 
   static String encodeEnum(dynamic value) {
