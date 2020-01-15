@@ -17,11 +17,11 @@ class LocationChannels {
     self.locationUpdatesHandler = LocationUpdatesHandler(locationClient: locationClient)
   }
   
-  func register(on plugin: SwiftNewGeolocationPlugin) {
-    let methodChannel = FlutterMethodChannel(name: "new_geolocation/location", binaryMessenger: plugin.registrar.messenger())
+  func register(on plugin: SwiftGeolocationPlugin) {
+    let methodChannel = FlutterMethodChannel(name: "geolocation/location", binaryMessenger: plugin.registrar.messenger())
     methodChannel.setMethodCallHandler(handleMethodCall(_:result:))
     
-    let eventChannel = FlutterEventChannel(name: "new_geolocation/locationUpdates", binaryMessenger: plugin.registrar.messenger())
+    let eventChannel = FlutterEventChannel(name: "geolocation/locationUpdates", binaryMessenger: plugin.registrar.messenger())
     eventChannel.setStreamHandler(locationUpdatesHandler)
   }
   

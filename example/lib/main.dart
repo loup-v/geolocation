@@ -3,7 +3,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:new_geolocation/geolocation.dart';
+import 'package:geolocation/geolocation.dart';
 import 'tab_location.dart';
 import 'tab_track.dart';
 import 'tab_settings.dart';

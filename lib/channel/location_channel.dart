@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-part of new_geolocation;
+part of geolocation;
 
 // Location updates communicate with platform plugin through a mix of [EventChannel] and [MethodChannel].
 // Reasons:
@@ -19,10 +19,10 @@ part of new_geolocation;
 //    until owner cancels it.
 class _LocationChannel {
   static const MethodChannel _channel =
-      const MethodChannel('new_geolocation/location');
+      const MethodChannel('geolocation/location');
 
   static const EventChannel _updatesChannel =
-      const EventChannel('new_geolocation/locationUpdates');
+      const EventChannel('geolocation/locationUpdates');
 
   static const String _loggingTag = 'location result';
 

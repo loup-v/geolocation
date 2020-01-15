@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-part of new_geolocation;
+part of geolocation;
 
 class Location {
   Location._(this.latitude, this.longitude, this.altitude, this.isMocked);

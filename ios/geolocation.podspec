@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
-  s.name             = 'new_geolocation'
+  s.name             = 'geolocation'
   s.version          = '1.0.0'
   s.summary          = 'Geolocation plugin for iOS and Android.'
   s.description      = <<-DESC
 Geolocation plugin for iOS and Android.
                        DESC
-  s.homepage         = 'https://github.com/alfanhui/new_geolocation'
+  s.homepage         = 'https://github.com/loup-v/geolocation'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Loup Inc.' => 'hello@intheloup.io' }
   s.source           = { :path => '.' }

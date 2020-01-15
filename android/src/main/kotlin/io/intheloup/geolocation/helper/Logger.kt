@@ -1,4 +1,4 @@
-package io.alfanhui.new_geolocation.helper
+package io.intheloup.geolocation.helper
 
 private const val tag = "geolocation"
 

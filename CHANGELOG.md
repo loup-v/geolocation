@@ -1,15 +1,15 @@
-## [1.0.0]
+## [1.0.0] (alfanhui / new_geolocation)
 
 * Updated Kotlin to 1.3.41
 * Updated Kotlin experimental coroutines to Kotlinx
 * Updated Android packages to Androidx (hence major release increment)
 
-## [0.2.3]
+## [0.2.3] (alfanhui / new_geolocation)
 
 * Added updated pubspec description
 * Flutter format on number of files
 
-## [0.2.2]
+## [0.2.2] (alfanhui / new_geolocation)
 
 * Better encoding of 'options' on LocationUpdatesRequest [hoggetaylor]
 * Fix argument of type string can not be assigned to DiagnosticsNode [osamagamal65]

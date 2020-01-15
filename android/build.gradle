@@ -1,4 +1,4 @@
-group 'io.alfanhui.new_geolocation'
+group 'io.intheloup.geolocation'
 version '1.0-SNAPSHOT'
 
 buildscript {

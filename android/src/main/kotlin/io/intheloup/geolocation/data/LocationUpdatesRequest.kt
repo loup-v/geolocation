@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-package io.alfanhui.new_geolocation.data
+package io.intheloup.geolocation.data
 
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson

@@ -1,4 +1,4 @@
-package io.alfanhui.new_geolocation_example;
+package io.intheloup.geolocation_example;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

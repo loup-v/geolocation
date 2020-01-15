@@ -1,8 +1,8 @@
-name: new_geolocation
-description: new_geolocation plugin for iOS and Android. Republished from InTheLoup's geolocation and now maintained.
+name: geolocation
+description: geolocation plugin for iOS and Android. Republished from InTheLoup's geolocation and now maintained.
 version: 1.0.0
 author: Loup Inc. <hello@intheloup.io>
-homepage: https://github.com/alfanhui/new_geolocation
+homepage: https://github.com/loup-v/geolocation/
 
 environment:
   sdk: '>=1.19.0 <3.0.0'
@@ -16,5 +16,5 @@ dependencies:
 
 flutter:
   plugin:
-    androidPackage: io.alfanhui.new_geolocation
-    pluginClass: NewGeolocationPlugin
+    androidPackage: io.intheloup.geolocation
+    pluginClass: GeolocationPlugin

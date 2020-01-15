@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-package io.alfanhui.new_geolocation.location
+package io.intheloup.geolocation.location
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -14,11 +14,11 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import io.flutter.plugin.common.PluginRegistry
-import io.alfanhui.new_geolocation.NewGeolocationPlugin
-import io.alfanhui.new_geolocation.data.LocationData
-import io.alfanhui.new_geolocation.data.LocationUpdatesRequest
-import io.alfanhui.new_geolocation.data.Permission
-import io.alfanhui.new_geolocation.data.Result
+import io.intheloup.geolocation.GeolocationPlugin
+import io.intheloup.geolocation.data.LocationData
+import io.intheloup.geolocation.data.LocationUpdatesRequest
+import io.intheloup.geolocation.data.Permission
+import io.intheloup.geolocation.data.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -32,7 +32,7 @@ import com.google.android.gms.location.LocationRequest
 class LocationClient(private val activity: Activity) {
 
     val permissionResultListener: PluginRegistry.RequestPermissionsResultListener = PluginRegistry.RequestPermissionsResultListener { id, _, grantResults ->
-        if (id == NewGeolocationPlugin.Intents.LocationPermissionRequestId) {
+        if (id == GeolocationPlugin.Intents.LocationPermissionRequestId) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 permissionCallbacks.forEach { it.success(Unit) }
             } else {
@@ -46,7 +46,7 @@ class LocationClient(private val activity: Activity) {
     }
 
     val activityResultListener: PluginRegistry.ActivityResultListener = PluginRegistry.ActivityResultListener { id, resultCode, intent ->
-        if (id == NewGeolocationPlugin.Intents.EnableLocationSettingsRequestId) {
+        if (id == GeolocationPlugin.Intents.EnableLocationSettingsRequestId) {
             if (resultCode == Activity.RESULT_OK) {
                 locationSettingsCallbacks.forEach { it.success(Unit) }
             } else {
@@ -354,7 +354,7 @@ class LocationClient(private val activity: Activity) {
         )
         permissionCallbacks.add(callback)
 
-        ActivityCompat.requestPermissions(activity, arrayOf(permission.manifestValue), NewGeolocationPlugin.Intents.LocationPermissionRequestId)
+        ActivityCompat.requestPermissions(activity, arrayOf(permission.manifestValue), GeolocationPlugin.Intents.LocationPermissionRequestId)
     }
 
     private suspend fun requestEnablingLocation(): Boolean = suspendCoroutine { cont ->
@@ -383,7 +383,7 @@ class LocationClient(private val activity: Activity) {
                             val resolvable = exception as ResolvableApiException
                             resolvable.startResolutionForResult(
                                 activity,
-                                NewGeolocationPlugin.Intents.EnableLocationSettingsRequestId
+                                GeolocationPlugin.Intents.EnableLocationSettingsRequestId
                             )
                             locationSettingsCallbacks.add(callback)
 

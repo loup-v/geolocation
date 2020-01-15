@@ -1,15 +1,15 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-package io.alfanhui.new_geolocation
+package io.intheloup.geolocation
 
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import io.alfanhui.new_geolocation.location.LocationClient
+import io.intheloup.geolocation.location.LocationClient
 
-class NewGeolocationPlugin(val registrar: Registrar) {
+class GeolocationPlugin(val registrar: Registrar) {
 
     private val locationClient = LocationClient(registrar.activity())
     private val locationChannel = LocationChannel(locationClient)
@@ -54,7 +54,7 @@ class NewGeolocationPlugin(val registrar: Registrar) {
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val plugin = NewGeolocationPlugin(registrar)
+            val plugin = GeolocationPlugin(registrar)
         }
     }
 

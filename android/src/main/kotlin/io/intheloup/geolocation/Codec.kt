@@ -1,13 +1,13 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-package io.alfanhui.new_geolocation
+package io.intheloup.geolocation
 
 import com.squareup.moshi.Moshi
-import io.alfanhui.new_geolocation.data.LocationUpdatesRequest
-import io.alfanhui.new_geolocation.data.Permission
-import io.alfanhui.new_geolocation.data.Priority
-import io.alfanhui.new_geolocation.data.Result
+import io.intheloup.geolocation.data.LocationUpdatesRequest
+import io.intheloup.geolocation.data.Permission
+import io.intheloup.geolocation.data.Priority
+import io.intheloup.geolocation.data.Result
 
 object Codec {
 

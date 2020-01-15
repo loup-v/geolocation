@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-package io.alfanhui.new_geolocation.location
+package io.intheloup.geolocation.location
 
 import android.Manifest
 import android.content.Context
@@ -10,7 +10,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationRequest
-import io.alfanhui.new_geolocation.data.Permission
+import io.intheloup.geolocation.data.Permission
 
 object LocationHelper {
 

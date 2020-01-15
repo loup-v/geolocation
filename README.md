@@ -1,8 +1,8 @@
-# new_geolocation
+# geolocation
 
-[![pub package](https://img.shields.io/pub/v/new_geolocation.svg)](https://pub.dartlang.org/packages/new_geolocation)
+[![pub package](https://img.shields.io/pub/v/geolocation.svg)](https://pub.dartlang.org/packages/geolocation)
 
-Flutter [new_geolocation plugin](https://pub.dartlang.org/packages/new_geolocation/) for Android API 16+ and iOS 9+.  
+Flutter [geolocation plugin](https://pub.dartlang.org/packages/geolocation/) for Android API 16+ and iOS 9+.  
 
 Features:
 
@@ -21,7 +21,7 @@ The plugin is under active development and the following features are planned so
 
 Android | iOS
 :---: | :---:
-![](https://github.com/alfanhui/new_geolocation/blob/master/doc/android_screenshot.jpg?raw=true) | ![](https://github.com/alfanhui/new_geolocation/blob/master/doc/ios_screenshot.jpg?raw=true)
+![](https://github.com/loup-v/geolocation/blob/master/doc/android_screenshot.jpg?raw=true) | ![](https://github.com/loup-v/geolocation/blob/master/doc/ios_screenshot.jpg?raw=true)
 
 
 ## Installation
@@ -30,17 +30,17 @@ Add geolocation to your pubspec.yaml:
 
 ```yaml
 dependencies:
-  new_geolocation:
+  geolocation:
     git:
-      url: https://github.com/alfanhui/new_geolocation
+      url: https://github.com/loup-v/geolocation
 ```
 
 ## Import
 
-Package is called new_geolocation, with Geolocation being the base class.
+Package is called geolocation, with Geolocation being the base class.
 
 ```dart
-import 'package:new_geolocation/geolocation.dart';
+import 'package:geolocation/geolocation.dart';
 ```
 
 **Note:** There is a known issue for integrating swift written plugin into Flutter project created with Objective-C template.

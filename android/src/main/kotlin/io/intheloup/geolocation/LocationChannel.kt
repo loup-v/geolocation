@@ -1,14 +1,14 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-package io.alfanhui.new_geolocation
+package io.intheloup.geolocation
 
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.alfanhui.new_geolocation.data.LocationUpdatesRequest
-import io.alfanhui.new_geolocation.data.Permission
-import io.alfanhui.new_geolocation.location.LocationClient
+import io.intheloup.geolocation.data.LocationUpdatesRequest
+import io.intheloup.geolocation.data.Permission
+import io.intheloup.geolocation.location.LocationClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -16,11 +16,11 @@ import kotlinx.coroutines.launch
 
 class LocationChannel(private val locationClient: LocationClient) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 
-    fun register(plugin: NewGeolocationPlugin) {
-        val methodChannel = MethodChannel(plugin.registrar.messenger(), "new_geolocation/location")
+    fun register(plugin: GeolocationPlugin) {
+        val methodChannel = MethodChannel(plugin.registrar.messenger(), "geolocation/location")
         methodChannel.setMethodCallHandler(this)
 
-        val eventChannel = EventChannel(plugin.registrar.messenger(), "new_geolocation/locationUpdates")
+        val eventChannel = EventChannel(plugin.registrar.messenger(), "geolocation/locationUpdates")
         eventChannel.setStreamHandler(this)
     }
 

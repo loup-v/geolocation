@@ -1,7 +1,7 @@
 //  Copyright (c) 2018 Loup Inc.
 //  Licensed under Apache License v2.0
 
-library new_geolocation;
+library geolocation;
 
 import 'dart:async';
 import 'dart:convert';

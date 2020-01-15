@@ -1,4 +1,4 @@
-name: new_geolocation_example
+name: geolocation_example
 description: A new Flutter project.
 
 # The following defines the version and build number for your application.
@@ -28,7 +28,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  new_geolocation:
+  geolocation:
     path: ../
 
 # For information on the generic Dart part of this file, see the

@@ -5,5 +5,5 @@
 
 #import <Flutter/Flutter.h>
 
-@interface NewGeolocationPlugin : NSObject<FlutterPlugin>
+@interface GeolocationPlugin : NSObject<FlutterPlugin>
 @end
