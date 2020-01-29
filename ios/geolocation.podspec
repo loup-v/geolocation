@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'geolocation'
-  s.version          = '0.0.1'
+  s.version          = '1.0.0'
   s.summary          = 'Geolocation plugin for iOS and Android.'
   s.description      = <<-DESC
 Geolocation plugin for iOS and Android.

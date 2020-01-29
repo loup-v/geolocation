@@ -23,14 +23,32 @@ class _Codec {
   static double parseJsonNumber(dynamic value) {
     return value.runtimeType == int ? (value as int).toDouble() : value;
   }
+  
+  static bool parseJsonBoolean(dynamic value) {
+    return value.toString() == 'true';
+  }
 
   static String encodeEnum(dynamic value) {
     return value.toString().split('.').last;
   }
 
-  static String platformSpecific({
-    @required String android,
-    @required String ios,
+  static dynamic platformSpecific({
+    @required dynamic android,
+    @required dynamic ios,
+  }) {
+    if (Platform.isAndroid) {
+      return android;
+    } else if (Platform.isIOS) {
+      return ios;
+    } else {
+      throw new GeolocationException(
+          'Unsupported platform: ${Platform.operatingSystem}');
+    }
+  }
+
+  static Map<String, dynamic> platformSpecificMap({
+    @required Map<String, dynamic> android,
+    @required Map<String, dynamic> ios,
   }) {
     if (Platform.isAndroid) {
       return android;
@@ -91,6 +109,7 @@ class _JsonCodec {
         _Codec.parseJsonNumber(json['latitude']),
         _Codec.parseJsonNumber(json['longitude']),
         _Codec.parseJsonNumber(json['altitude']),
+        _Codec.parseJsonBoolean(json['isMocked']),
       );
 
   static Map<String, dynamic> locationUpdatesRequestToJson(
@@ -106,8 +125,8 @@ class _JsonCodec {
         'displacementFilter': request.displacementFilter,
         'inBackground': request.inBackground,
         'options': _Codec.platformSpecific(
-          android: _Codec.encodeEnum(request.androidOptions),
-          ios: _Codec.encodeEnum(request.accuracy.ios),
+          android: request.androidOptions,
+          ios: request.iosOptions,
         ),
       };
 }

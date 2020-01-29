@@ -7,9 +7,11 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.location.Location
-import android.support.v4.app.ActivityCompat
+import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import io.flutter.plugin.common.PluginRegistry
 import io.intheloup.geolocation.GeolocationPlugin
@@ -17,9 +19,14 @@ import io.intheloup.geolocation.data.LocationData
 import io.intheloup.geolocation.data.LocationUpdatesRequest
 import io.intheloup.geolocation.data.Permission
 import io.intheloup.geolocation.data.Result
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlin.coroutines.experimental.suspendCoroutine
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationRequest
+
 
 @SuppressLint("MissingPermission")
 class LocationClient(private val activity: Activity) {
@@ -38,9 +45,24 @@ class LocationClient(private val activity: Activity) {
         return@RequestPermissionsResultListener false
     }
 
+    val activityResultListener: PluginRegistry.ActivityResultListener = PluginRegistry.ActivityResultListener { id, resultCode, intent ->
+        if (id == GeolocationPlugin.Intents.EnableLocationSettingsRequestId) {
+            if (resultCode == Activity.RESULT_OK) {
+                locationSettingsCallbacks.forEach { it.success(Unit) }
+            } else {
+                locationSettingsCallbacks.forEach { it.failure(Unit) }
+            }
+            locationSettingsCallbacks.clear()
+
+            return@ActivityResultListener true
+        }
+        return@ActivityResultListener false
+    }
+
 
     private val providerClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(activity)
     private val permissionCallbacks = ArrayList<Callback<Unit, Unit>>()
+    private val locationSettingsCallbacks = ArrayList<Callback<Unit, Unit>>()
 
     private var locationUpdatesCallback: ((Result) -> Unit)? = null
     private val locationUpdatesRequests = ArrayList<LocationUpdatesRequest>()
@@ -57,6 +79,13 @@ class LocationClient(private val activity: Activity) {
         }
     }
 
+    suspend fun enableLocationServices(): Result {
+        return if (LocationHelper.isLocationEnabled(activity)) {
+            Result.success(true)
+        } else {
+            Result(requestEnablingLocation())
+        }
+    }
 
     // One shot API
 
@@ -156,7 +185,7 @@ class LocationClient(private val activity: Activity) {
     }
 
     private fun updateLocationRequest() {
-        launch(UI) {
+        GlobalScope.launch(Dispatchers.Main){
             if (locationUpdatesRequests.isEmpty()) {
                 currentLocationRequest = null
                 isPaused = false
@@ -188,56 +217,56 @@ class LocationClient(private val activity: Activity) {
             val locationRequest = LocationRequest.create()
 
             locationRequest.priority = locationUpdatesRequests.map { it.accuracy.androidValue }
-                    .sortedWith(Comparator { o1, o2 ->
-                        when (o1) {
-                            o2 -> 0
-                            LocationHelper.getBestPriority(o1, o2) -> 1
-                            else -> -1
-                        }
-                    })
-                    .first()
+                .sortedWith(Comparator { o1, o2 ->
+                    when (o1) {
+                        o2 -> 0
+                        LocationHelper.getBestPriority(o1, o2) -> 1
+                        else -> -1
+                    }
+                })
+                .first()
 
             locationUpdatesRequests.map { it.displacementFilter }
-                    .min()!!
-                    .takeIf { it > 0 }
-                    ?.let { locationRequest.smallestDisplacement = it }
+                .min()!!
+                .takeIf { it > 0 }
+                ?.let { locationRequest.smallestDisplacement = it }
 
             locationUpdatesRequests
-                    .filter { it.options.interval != null }
-                    .map { it.options.interval!! }
-                    .min()
-                    ?.let { locationRequest.interval = it }
+                .filter { it.options.interval != null }
+                .map { it.options.interval!! }
+                .min()
+                ?.let { locationRequest.interval = it }
 
             locationUpdatesRequests
-                    .filter { it.options.fastestInterval != null }
-                    .map { it.options.fastestInterval!! }
-                    .min()
-                    ?.let { locationRequest.fastestInterval = it }
+                .filter { it.options.fastestInterval != null }
+                .map { it.options.fastestInterval!! }
+                .min()
+                ?.let { locationRequest.fastestInterval = it }
 
             locationUpdatesRequests
-                    .filter { it.options.expirationTime != null }
-                    .map { it.options.expirationTime!! }
-                    .min()
-                    ?.let { locationRequest.expirationTime = it }
+                .filter { it.options.expirationTime != null }
+                .map { it.options.expirationTime!! }
+                .min()
+                ?.let { locationRequest.expirationTime = it }
 
             locationUpdatesRequests
-                    .filter { it.options.expirationDuration != null }
-                    .map { it.options.expirationDuration!! }
-                    .min()
-                    ?.let { locationRequest.setExpirationDuration(it) }
+                .filter { it.options.expirationDuration != null }
+                .map { it.options.expirationDuration!! }
+                .min()
+                ?.let { locationRequest.setExpirationDuration(it) }
 
             locationUpdatesRequests
-                    .filter { it.options.maxWaitTime != null }
-                    .map { it.options.maxWaitTime!! }
-                    .min()
-                    ?.let { locationRequest.maxWaitTime = it }
+                .filter { it.options.maxWaitTime != null }
+                .map { it.options.maxWaitTime!! }
+                .min()
+                ?.let { locationRequest.maxWaitTime = it }
 
             if (locationUpdatesRequests.any { it.strategy == LocationUpdatesRequest.Strategy.Continuous }) {
                 locationUpdatesRequests
-                        .filter { it.options.numUpdates != null }
-                        .map { it.options.numUpdates!! }
-                        .max()
-                        ?.let { locationRequest.numUpdates = it }
+                    .filter { it.options.numUpdates != null }
+                    .map { it.options.numUpdates!! }
+                    .max()
+                    ?.let { locationRequest.numUpdates = it }
             } else {
                 locationRequest.numUpdates = 1
             }
@@ -296,8 +325,8 @@ class LocationClient(private val activity: Activity) {
         val connectionResult = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity)
         if (connectionResult != ConnectionResult.SUCCESS) {
             return ServiceStatus(false, false,
-                    Result.failure(Result.Error.Type.PlayServicesUnavailable,
-                            playServices = Result.Error.PlayServices.fromConnectionResult(connectionResult)))
+                Result.failure(Result.Error.Type.PlayServicesUnavailable,
+                    playServices = Result.Error.PlayServices.fromConnectionResult(connectionResult)))
         }
 
         if (!LocationHelper.isLocationEnabled(activity)) {
@@ -320,27 +349,65 @@ class LocationClient(private val activity: Activity) {
 
     private suspend fun requestPermission(permission: Permission): Boolean = suspendCoroutine { cont ->
         val callback = Callback<Unit, Unit>(
-                success = { _ -> cont.resume(true) },
-                failure = { _ -> cont.resume(false) }
+            success = { _ -> cont.resume(true) },
+            failure = { _ -> cont.resume(false) }
         )
         permissionCallbacks.add(callback)
 
         ActivityCompat.requestPermissions(activity, arrayOf(permission.manifestValue), GeolocationPlugin.Intents.LocationPermissionRequestId)
     }
 
+    private suspend fun requestEnablingLocation(): Boolean = suspendCoroutine { cont ->
+        val callback = Callback<Unit, Unit>(
+            success = { _ -> cont.resume(true) },
+            failure = { _ -> cont.resume(false) }
+        )
+        val mLocationRequest = LocationRequest()
+        mLocationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+
+        LocationServices
+            .getSettingsClient(activity)
+            .checkLocationSettings(
+                LocationSettingsRequest
+                    .Builder()
+                    .addLocationRequest(mLocationRequest)
+                    .setAlwaysShow(true)
+                    .build()
+            ).addOnSuccessListener {
+                callback.success
+            }.addOnFailureListener { ex ->
+                val exception: ApiException = ex as ApiException
+                when (exception.statusCode) {
+                    LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
+                        try {
+                            val resolvable = exception as ResolvableApiException
+                            resolvable.startResolutionForResult(
+                                activity,
+                                GeolocationPlugin.Intents.EnableLocationSettingsRequestId
+                            )
+                            locationSettingsCallbacks.add(callback)
+
+                            return@addOnFailureListener
+                        } catch (ignore: java.lang.Exception) {
+                        }
+                    }
+                }
+                callback.failure
+            }
+    }
 
     // Location helpers
 
     private suspend fun locationAvailability(): LocationAvailability = suspendCoroutine { cont ->
         providerClient.locationAvailability
-                .addOnSuccessListener { cont.resume(it) }
-                .addOnFailureListener { cont.resumeWithException(it) }
+            .addOnSuccessListener { cont.resume(it) }
+            .addOnFailureListener { cont.resumeWithException(it) }
     }
 
     private suspend fun lastLocation(): Location? = suspendCoroutine { cont ->
         providerClient.lastLocation
-                .addOnSuccessListener { location: Location? -> cont.resume(location) }
-                .addOnFailureListener { cont.resumeWithException(it) }
+            .addOnSuccessListener { location: Location? -> cont.resume(location) }
+            .addOnFailureListener { cont.resumeWithException(it) }
     }
 
 

@@ -9,8 +9,10 @@ import io.flutter.plugin.common.MethodChannel
 import io.intheloup.geolocation.data.LocationUpdatesRequest
 import io.intheloup.geolocation.data.Permission
 import io.intheloup.geolocation.location.LocationClient
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+
 
 class LocationChannel(private val locationClient: LocationClient) : MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
 
@@ -27,19 +29,25 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
     }
 
     private fun requestLocationPermission(permission: Permission, result: MethodChannel.Result) {
-        launch(UI) {
+        GlobalScope.launch(Dispatchers.Main) {
             result.success(Codec.encodeResult(locationClient.requestLocationPermission(permission)))
         }
     }
 
+    private fun enableLocationSettings(result: MethodChannel.Result) {
+        GlobalScope.launch(Dispatchers.Main) {
+            result.success(Codec.encodeResult(locationClient.enableLocationServices()))
+        }
+    }
+
     private fun lastKnownLocation(permission: Permission, result: MethodChannel.Result) {
-        launch(UI) {
+        GlobalScope.launch(Dispatchers.Main) {
             result.success(Codec.encodeResult(locationClient.lastKnownLocation(permission)))
         }
     }
 
     private fun addLocationUpdatesRequest(request: LocationUpdatesRequest) {
-        launch(UI) {
+        GlobalScope.launch(Dispatchers.Main) {
             locationClient.addLocationUpdatesRequest(request)
         }
     }
@@ -58,6 +66,7 @@ class LocationChannel(private val locationClient: LocationClient) : MethodChanne
             "lastKnownLocation" -> lastKnownLocation(Codec.decodePermission(call.arguments), result)
             "addLocationUpdatesRequest" -> addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(call.arguments))
             "removeLocationUpdatesRequest" -> removeLocationUpdatesRequest(Codec.decodeInt(call.arguments))
+            "enableLocationServices" -> enableLocationSettings(result)
             else -> result.notImplemented()
         }
     }

@@ -26,6 +26,16 @@ class LocationOptionsIOS {
 
   final bool showsBackgroundLocationIndicator;
   final LocationActivityIOS activityType;
+
+  Map toJson() => {
+        'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
+        'activityType': _Codec.encodeEnum(activityType)
+      };
+
+  toMap() => {
+        'showsBackgroundLocationIndicator': showsBackgroundLocationIndicator,
+        'activityType': activityType.toString().split('.').last
+      };
 }
 
 enum LocationActivityIOS {

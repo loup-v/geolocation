@@ -1,3 +1,25 @@
+## [1.0.0] (alfanhui / new_geolocation)
+
+* Updated Kotlin to 1.3.41
+* Updated Kotlin experimental coroutines to Kotlinx
+* Updated Android packages to Androidx (hence major release increment)
+
+## [0.2.3] (alfanhui / new_geolocation)
+
+* Added updated pubspec description
+* Flutter format on number of files
+
+## [0.2.2] (alfanhui / new_geolocation)
+
+* Better encoding of 'options' on LocationUpdatesRequest [hoggetaylor]
+* Fix argument of type string can not be assigned to DiagnosticsNode [osamagamal65]
+* Adding support for new method to request enabling location services [shehabic]
+* Updated Readme [shehabic]
+* Various fixes for XCode 10, and Cocoa Pods 1.5.3 [shehabic]
+* Updated Google Play Services Version [shehabic]
+* Fixed serialization from dart to native platforms [shehabic]
+* Updated kotlin version [shehabic]
+
 ## [0.2.1]
 
 * Replace `requestPermission(permission)` named parameter by positional

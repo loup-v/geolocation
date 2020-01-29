@@ -35,8 +35,8 @@ class _MyAppState extends State<MyApp> {
               icon: new Icon(Icons.location_searching),
             ),
             new BottomNavigationBarItem(
-              title: new Text('Geocode'),
-              icon: new Icon(Icons.location_city),
+              title: new Text('Services'),
+              icon: new Icon(Icons.location_off),
             ),
             new BottomNavigationBarItem(
               title: new Text('Settings'),
@@ -56,8 +56,16 @@ class _MyAppState extends State<MyApp> {
                   return new TabSettings();
                 default:
                   return new Container(
+                    color: Colors.white,
                     child: new Center(
-                      child: new Text('TBD'),
+                      child: new FlatButton(
+                        color: Colors.blue,
+                        child: Text(
+                          "Enable location services",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: enableLocationServices,
+                      ),
                     ),
                   );
               }
@@ -66,5 +74,13 @@ class _MyAppState extends State<MyApp> {
         },
       ),
     );
+  }
+
+  enableLocationServices() async {
+    Geolocation.enableLocationServices().then((result) {
+      // Request location
+    }).catchError((e) {
+      // Location Services Enablind Cancelled
+    });
   }
 }

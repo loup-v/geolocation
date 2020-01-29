@@ -10,7 +10,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:streams_channel/streams_channel.dart';
 
 part 'channel/codec.dart';
 part 'channel/helper.dart';
@@ -45,6 +44,15 @@ class Geolocation {
     LocationPermission permission = const LocationPermission(),
   }) =>
       _locationChannel.isLocationOperational(permission);
+
+  /// Requests enabling location services, if needed.
+  ///
+  /// If location services are already enabled, it returns successfully.
+  /// If location is not operational it'll ask to enable it and will fail right away
+  ///
+  ///
+  static Future<GeolocationResult> enableLocationServices() =>
+      _locationChannel.enableLocationServices();
 
   /// Requests the location [permission], if needed.
   ///
@@ -204,7 +212,7 @@ class Geolocation {
   /// Activate verbose logging for debugging purposes.
   static bool loggingEnabled = false;
 
-  static final _LocationChannels _locationChannel = new _LocationChannels();
+  static final _LocationChannel _locationChannel = new _LocationChannel();
 }
 
 class GeolocationException implements Exception {

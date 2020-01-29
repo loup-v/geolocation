@@ -15,7 +15,8 @@ Future<String> _invokeChannelMethod(
       exception: exception,
       stack: stack,
       library: 'geolocation',
-      context: 'while invoking ${channel.name}/$method',
+      context:
+          DiagnosticsNode.message('while invoking ${channel.name}/$method'),
     ));
   }
 
