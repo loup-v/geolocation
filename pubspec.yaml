@@ -1,6 +1,6 @@
 name: geolocation
 description: Location plugin for iOS and Android.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/loup-v/geolocation/
 
 environment:
@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  streams_channel: ^0.2.1
+  streams_channel: ^0.2.3
 
 flutter:
   plugin:

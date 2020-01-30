@@ -1,3 +1,7 @@
+## [1.0.1]
+
+- Update to streams_channel 0.2.3
+
 ## [1.0.0] (thanks @alfanhui)
 
 - Updated Kotlin to 1.3.41

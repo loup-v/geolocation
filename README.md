@@ -28,7 +28,7 @@ Add geolocation to your pubspec.yaml:
 
 ```yaml
 dependencies:
-  geolocation: ^1.0.0
+  geolocation: ^1.0.1
 ```
 
 ## Import
@@ -238,7 +238,7 @@ if (result.isSuccessful) {
 ## Authors
 
 Geolocation plugin is developed by Loup, a mobile development studio based in Montreal and Paris.  
-You can contact us at <hello@intheloup.io>
+You can contact us at <hello@loup.app>
 
 ## Contributers
 
