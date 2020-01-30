@@ -2,27 +2,25 @@
 
 [![pub package](https://img.shields.io/pub/v/geolocation.svg)](https://pub.dartlang.org/packages/geolocation)
 
-Flutter [geolocation plugin](https://pub.dartlang.org/packages/geolocation/) for Android API 16+ and iOS 9+.  
+Flutter [geolocation plugin](https://pub.dartlang.org/packages/geolocation/) for Android API 16+ and iOS 9+.
 
 Features:
 
-* Manual and automatic location permission management
-* Current one-shot location
-* Continuous location updates with foreground and background options 
+- Manual and automatic location permission management
+- Current one-shot location
+- Continuous location updates with foreground and background options
 
 The plugin is under active development and the following features are planned soon:
 
-* Geocode
-* Geofences
-* Place suggestions
-* Activity recognition
-* Exposition of iOS/Android specific APIs (like significant location updates on iOS)
+- Geocode
+- Geofences
+- Place suggestions
+- Activity recognition
+- Exposition of iOS/Android specific APIs (like significant location updates on iOS)
 
-
-Android | iOS
-:---: | :---:
-![](https://github.com/loup-v/geolocation/blob/master/doc/android_screenshot.jpg?raw=true) | ![](https://github.com/loup-v/geolocation/blob/master/doc/ios_screenshot.jpg?raw=true)
-
+|                                          Android                                           |                                          iOS                                           |
+| :----------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------: |
+| ![](https://github.com/loup-v/geolocation/blob/master/doc/android_screenshot.jpg?raw=true) | ![](https://github.com/loup-v/geolocation/blob/master/doc/ios_screenshot.jpg?raw=true) |
 
 ## Installation
 
@@ -30,9 +28,7 @@ Add geolocation to your pubspec.yaml:
 
 ```yaml
 dependencies:
-  geolocation:
-    git:
-      url: https://github.com/loup-v/geolocation
+  geolocation: ^1.0.0
 ```
 
 ## Import
@@ -44,11 +40,12 @@ import 'package:geolocation/geolocation.dart';
 ```
 
 **Note:** There is a known issue for integrating swift written plugin into Flutter project created with Objective-C template.
-See issue [Flutter#16049](https://github.com/flutter/flutter/issues/16049) for help on integration. 
-
+See issue [Flutter#16049](https://github.com/flutter/flutter/issues/16049) for help on integration.
 
 ### AndroidX Requirement
+
 You may need to updated your '/android/gradle.properties' to include use of AndroidX.
+
 ```
 android.useAndroidX=true
 android.enableJetifier=true
@@ -56,7 +53,7 @@ android.enableJetifier=true
 
 ### Permission
 
-Android and iOS require to declare the location permission in a configuration file. 
+Android and iOS require to declare the location permission in a configuration file.
 
 #### For iOS
 
@@ -74,14 +71,13 @@ You need to declare the description for the desired permission in `ios/Runner/In
   <string>Reason why app needs location</string>
   <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
   <string>Reason why app needs location</string>
-  
+
   <!-- additionally for iOS 9/10, if you need always permission -->
   <key>NSLocationAlwaysUsageDescription</key>
   <string>Reason why app needs location</string>
   ...
 </dict>
 ```
-
 
 #### For Android
 
@@ -96,10 +92,9 @@ You need to declare one of the two permissions in `android/app/src/main/AndroidM
   <!-- or -->
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 </manifest>
-``` 
-  
-Note that `ACCESS_FINE_LOCATION` permission includes `ACCESS_COARSE_LOCATION`.
+```
 
+Note that `ACCESS_FINE_LOCATION` permission includes `ACCESS_COARSE_LOCATION`.
 
 ## API
 
@@ -119,13 +114,13 @@ if(result.isSuccessful) {
 } else {
   // location service is not enabled, restricted, or location permission is denied
 }
-``` 
+```
 
 ### Request location permission
 
 On Android (api 23+) and iOS, geolocation needs to request permission at runtime.
 
-_Note: You are not required to request permission manually. 
+_Note: You are not required to request permission manually.
 Geolocation plugin will request permission automatically if it's needed, when you make a location request._
 
 API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/requestLocationPermission.html
@@ -140,22 +135,20 @@ if(result.isSuccessful) {
   // location permission is granted (or was already granted before making the request)
 } else {
   // location permission is not granted
-  // user might have denied, but it's also possible that location service is not enabled, restricted, and user never saw the permission request dialog 
+  // user might have denied, but it's also possible that location service is not enabled, restricted, and user never saw the permission request dialog
 }
-``` 
-
+```
 
 ### Get the current one-shot location
 
 Geolocation offers three methods:
 
-* Last known location (best on Android):  
-https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/lastKnownLocation.html
-* Single location update (best on iOS):   
-https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/singleLocationUpdate.html
-* Current location (best of both worlds, tries to retrieve last known location on Android, otherwise requests a single location update):   
-https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/currentLocation.html
-
+- Last known location (best on Android):  
+  https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/lastKnownLocation.html
+- Single location update (best on iOS):  
+  https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/singleLocationUpdate.html
+- Current location (best of both worlds, tries to retrieve last known location on Android, otherwise requests a single location update):  
+  https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/currentLocation.html
 
 ```dart
 // best option for most cases
@@ -175,7 +168,6 @@ StreamSubscription<LocationResult> subscription = Geolocation.currentLocation(ac
 LocationResult result = await Geolocation.lastKnownLocation();
 ```
 
-
 ### Continuous location updates
 
 API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/locationUpdates.html
@@ -184,7 +176,7 @@ API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geol
 StreamSubscription<LocationResult> subscription = Geolocation.locationUpdates(
     accuracy: LocationAccuracy.best,
     displacementFilter: 10.0, // in meters
-    inBackground: true, // by default, location updates will pause when app is inactive (in background). Set to `true` to continue updates in background. 
+    inBackground: true, // by default, location updates will pause when app is inactive (in background). Set to `true` to continue updates in background.
   )
   .listen((result) {
     if(result.isSuccessful) {
@@ -197,7 +189,6 @@ StreamSubscription<LocationResult> subscription = Geolocation.locationUpdates(
 subscription.cancel();
 ```
 
-
 ### Handle location result
 
 Location request return either a `LocationResult` future or a stream of `LocationResult`.
@@ -208,7 +199,7 @@ API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geol
 LocationResult result = await Geolocation.lastKnownLocation();
 
 if (result.isSuccessful) {
-  // location request successful, location is guaranteed to not be null 
+  // location request successful, location is guaranteed to not be null
   double lat = result.location.latitude;
   double lng = result.location.longitude;
 } else {
@@ -221,7 +212,7 @@ if (result.isSuccessful) {
       break;
     case GeolocationResultErrorType.serviceDisabled:
       // location services disabled on device
-      // might be that GPS is turned off, or parental control (android) 
+      // might be that GPS is turned off, or parental control (android)
       break;
     case GeolocationResultErrorType.permissionDenied:
       // user denied location permission request
@@ -242,8 +233,7 @@ if (result.isSuccessful) {
     break;
   }
 }
-``` 
-
+```
 
 ## Authors
 
@@ -251,12 +241,13 @@ Geolocation plugin is developed by Loup, a mobile development studio based in Mo
 You can contact us at <hello@intheloup.io>
 
 ## Contributers
-* lukaspili 
-* mit-mit
-* shehabic-work 
-* Abgaryan
-* shehabic
-* alfanhui
+
+- lukaspili
+- mit-mit
+- shehabic-work
+- Abgaryan
+- shehabic
+- alfanhui
 
 ## License
 
