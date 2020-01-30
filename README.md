@@ -151,6 +151,14 @@ Geolocation offers three methods:
   https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/currentLocation.html
 
 ```dart
+// get last known location, which is a future rather than a stream (best for android)
+LocationResult result = await Geolocation.lastKnownLocation();
+
+// force a single location update (best for ios)
+StreamSubscription<LocationResult> subscription = Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
+  // todo with result
+});
+
 // best option for most cases
 StreamSubscription<LocationResult> subscription = Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
   if(result.isSuccessful) {
@@ -158,14 +166,6 @@ StreamSubscription<LocationResult> subscription = Geolocation.currentLocation(ac
     // todo with result
   }
 });
-
-// force a single location update
-StreamSubscription<LocationResult> subscription = Geolocation.currentLocation(accuracy: LocationAccuracy.best).listen((result) {
-  // todo with result
-});
-
-// get last known location, which is a future rather than a stream
-LocationResult result = await Geolocation.lastKnownLocation();
 ```
 
 ### Continuous location updates
