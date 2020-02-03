@@ -1,3 +1,7 @@
+## [1.0.2]
+
+- Fix `Accuracy.nearestTenMeters` on iOS
+
 ## [1.0.1]
 
 - Update to streams_channel 0.2.3

@@ -10,7 +10,7 @@ enum Accuracy: String, Codable {
   case threeKilometers = "threeKilometers"
   case kilometer = "kilometer"
   case hundredMeters = "hundredMeters"
-  case nearestTenMeters = "NearestTenMeters"
+  case nearestTenMeters = "nearestTenMeters"
   case best = "best"
   case bestForNavigation = "bestForNavigation"
   

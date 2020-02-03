@@ -28,7 +28,7 @@ Add geolocation to your pubspec.yaml:
 
 ```yaml
 dependencies:
-  geolocation: ^1.0.1
+  geolocation: ^1.0.2
 ```
 
 ## Import
