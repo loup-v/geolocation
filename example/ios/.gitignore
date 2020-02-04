@@ -16,6 +16,7 @@ xcuserdata
 **/.generated/
 Flutter/App.framework
 Flutter/Flutter.framework
+Flutter/Flutter.podspec
 Flutter/Generated.xcconfig
 Flutter/app.flx
 Flutter/app.zip
@@ -29,9 +30,3 @@ Runner/GeneratedPluginRegistrant.*
 !default.mode2v3
 !default.pbxuser
 !default.perspectivev3
-
-# Fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots
-fastlane/test_output

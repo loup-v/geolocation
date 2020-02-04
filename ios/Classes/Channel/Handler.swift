@@ -7,25 +7,17 @@ import Foundation
 import CoreLocation
 import streams_channel
 
-class LocationChannels {
-  
+class Handler {
+
   private let locationClient: LocationClient
-  private let locationUpdatesHandler: LocationUpdatesHandler
+  public let locationUpdatesHandler: LocationUpdatesHandler
   
   init(locationClient: LocationClient) {
     self.locationClient = locationClient
     self.locationUpdatesHandler = LocationUpdatesHandler(locationClient: locationClient)
   }
   
-  func register(with registrar: FlutterPluginRegistrar) {
-    let methodChannel = FlutterMethodChannel(name: "geolocation/location", binaryMessenger: registrar.messenger())
-    methodChannel.setMethodCallHandler(handleMethodCall(_:result:))
-    
-    let eventChannel = FlutterEventChannel(name: "geolocation/locationUpdates", binaryMessenger: registrar.messenger())
-    eventChannel.setStreamHandler(locationUpdatesHandler)
-  }
-  
-  private func handleMethodCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+  public func handleMethodCall(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
     case "isLocationOperational":
       isLocationOperational(permission: Codec.decodePermission(from: call.arguments), on: result)

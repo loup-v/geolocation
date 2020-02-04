@@ -68,7 +68,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   func removeLocationUpdates(requestId: Int) {
-    guard let index = locationUpdatesRequests.index(where: { $0.id == requestId }) else {
+    guard let index = locationUpdatesRequests.firstIndex(where: { $0.id == requestId }) else {
       return
     }
     
@@ -173,7 +173,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
         if #available(iOS 10.0, *),
           status.failure!.error!.type == .permissionDenied,
           permission.openSettingsIfDenied,
-          let appSettingURl = URL(string: UIApplicationOpenSettingsURLString),
+          let appSettingURl = URL(string: UIApplication.openSettingsURLString),
           UIApplication.shared.canOpenURL(appSettingURl) {
           permissionSettingsCallback = {
             let refreshedStatus: ServiceStatus<T> = self.currentServiceStatus(with: permission.value)
@@ -209,6 +209,8 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
       return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .serviceDisabled))
     case .authorizedWhenInUse, .authorizedAlways:
       return ServiceStatus<T>(isReady: true, needsAuthorization: nil, failure: nil)
+    @unknown default:
+      fatalError("Unknown CLLocationManager.authorizationStatus(): \(CLLocationManager.authorizationStatus())")
     }
   }
   

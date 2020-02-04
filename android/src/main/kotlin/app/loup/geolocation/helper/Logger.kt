@@ -1,4 +1,4 @@
-package io.intheloup.geolocation.helper
+package app.loup.geolocation.helper
 
 private const val tag = "geolocation"
 

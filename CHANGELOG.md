@@ -1,3 +1,8 @@
+## [1.1.0]
+
+- Fix background pause/resume on iOS
+- Refactor iOS internal structure
+
 ## [1.0.2]
 
 - Fix `Accuracy.nearestTenMeters` on iOS
