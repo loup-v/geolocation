@@ -90,7 +90,6 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   // Lifecycle API
   
   func resume() {
-    print("RESUME PERM SETTINGS CALLBACK = \(permissionSettingsCallback)")
     if let callback = permissionSettingsCallback {
       callback()
       permissionSettingsCallback = nil
