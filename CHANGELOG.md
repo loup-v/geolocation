@@ -1,5 +1,10 @@
 ## [1.1.0]
 
+- **Breaking change :** `Geolocation.requestLocationPermission` now takes a named parameter for permission
+- **Breaking change :** New `GeolocationResultErrorType.permissionNotGranted` type. Previous meaning for `permissionDenied` is now divided in two different states:
+  - `permissionNotGranted`: User didn't accept nor decline the locationn permission request yet
+  - `permissionDenied`: User specifically declined the permission request
+- Ability to open settings when requesting permission, and user already declined the permission previously: `Geolocation.requestLocationPermission(openSettingsIfDenied: true)` (opening the settings as fallback is now the default behaviour).
 - Fix background pause/resume on iOS
 - Refactor iOS internal structure
 
