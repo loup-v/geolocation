@@ -17,11 +17,11 @@ class LocationChannels {
     self.locationUpdatesHandler = LocationUpdatesHandler(locationClient: locationClient)
   }
   
-  func register(on plugin: SwiftGeolocationPlugin) {
-    let methodChannel = FlutterMethodChannel(name: "geolocation/location", binaryMessenger: plugin.registrar.messenger())
+  func register(with registrar: FlutterPluginRegistrar) {
+    let methodChannel = FlutterMethodChannel(name: "geolocation/location", binaryMessenger: registrar.messenger())
     methodChannel.setMethodCallHandler(handleMethodCall(_:result:))
     
-    let eventChannel = FlutterEventChannel(name: "geolocation/locationUpdates", binaryMessenger: plugin.registrar.messenger())
+    let eventChannel = FlutterEventChannel(name: "geolocation/locationUpdates", binaryMessenger: registrar.messenger())
     eventChannel.setStreamHandler(locationUpdatesHandler)
   }
   
@@ -30,7 +30,7 @@ class LocationChannels {
     case "isLocationOperational":
       isLocationOperational(permission: Codec.decodePermission(from: call.arguments), on: result)
     case "requestLocationPermission":
-      requestLocationPermission(permission: Codec.decodePermission(from: call.arguments), on: result)
+      requestLocationPermission(permission: Codec.decodePermissionRequest(from: call.arguments), on: result)
     case "lastKnownLocation":
       lastKnownLocation(permission: Codec.decodePermission(from: call.arguments), on: result)
     case "addLocationUpdatesRequest":
@@ -46,7 +46,7 @@ class LocationChannels {
     flutterResult(Codec.encode(result: locationClient.isLocationOperational(with: permission)))
   }
   
-  private func requestLocationPermission(permission: Permission, on flutterResult: @escaping FlutterResult) {
+  private func requestLocationPermission(permission: PermissionRequest, on flutterResult: @escaping FlutterResult) {
     locationClient.requestLocationPermission(with: permission) { result in
       flutterResult(Codec.encode(result: result))
     }

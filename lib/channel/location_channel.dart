@@ -36,18 +36,23 @@ class _LocationChannel {
 
   Future<GeolocationResult> isLocationOperational(
       LocationPermission permission) async {
-    final response = await _invokeChannelMethod(_loggingTag, _channel,
-        'isLocationOperational', _Codec.encodeLocationPermission(permission));
+    final response = await _invokeChannelMethod(
+      _loggingTag,
+      _channel,
+      'isLocationOperational',
+      _Codec.encodeLocationPermission(permission),
+    );
     return _Codec.decodeResult(response);
   }
 
   Future<GeolocationResult> requestLocationPermission(
-      LocationPermission permission) async {
+      _PermissionRequest request) async {
     final response = await _invokeChannelMethod(
-        _loggingTag,
-        _channel,
-        'requestLocationPermission',
-        _Codec.encodeLocationPermission(permission));
+      _loggingTag,
+      _channel,
+      'requestLocationPermission',
+      _Codec.encodePermissionRequest(request),
+    );
     return _Codec.decodeResult(response);
   }
 
@@ -59,8 +64,12 @@ class _LocationChannel {
 
   Future<LocationResult> lastKnownLocation(
       LocationPermission permission) async {
-    final response = await _invokeChannelMethod(_loggingTag, _channel,
-        'lastKnownLocation', _Codec.encodeLocationPermission(permission));
+    final response = await _invokeChannelMethod(
+      _loggingTag,
+      _channel,
+      'lastKnownLocation',
+      _Codec.encodeLocationPermission(permission),
+    );
     return _Codec.decodeLocationResult(response);
   }
 

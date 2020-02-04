@@ -16,14 +16,9 @@ class _TabSettingsState extends State<TabSettings> {
   GeolocationResult _locationOperationalResult;
   GeolocationResult _requestPermissionResult;
 
-  @override
-  initState() {
-    super.initState();
-    _isLocationOperationalPressed();
-  }
-
-  _isLocationOperationalPressed() async {
+  _checkLocationOperational() async {
     final GeolocationResult result = await Geolocation.isLocationOperational();
+
     if (mounted) {
       setState(() {
         _locationOperationalResult = result;
@@ -31,12 +26,16 @@ class _TabSettingsState extends State<TabSettings> {
     }
   }
 
-  _requestLocationPermissionPressed() async {
+  _requestPermission() async {
     final GeolocationResult result =
-        await Geolocation.requestLocationPermission(const LocationPermission(
-      android: LocationPermissionAndroid.fine,
-      ios: LocationPermissionIOS.always,
-    ));
+        await Geolocation.requestLocationPermission(
+      permission: const LocationPermission(
+        android: LocationPermissionAndroid.fine,
+        ios: LocationPermissionIOS.always,
+      ),
+      openSettingsIfDenied: true,
+    );
+
     if (mounted) {
       setState(() {
         _requestPermissionResult = result;
@@ -53,14 +52,16 @@ class _TabSettingsState extends State<TabSettings> {
       body: new ListView(
         children: ListTile.divideTiles(context: context, tiles: [
           new _Item(
-            isPermissionRequest: false,
+            title: 'Is location operational',
+            successLabel: 'Yes',
             result: _locationOperationalResult,
-            onPressed: _isLocationOperationalPressed,
+            onPressed: _checkLocationOperational,
           ),
           new _Item(
-            isPermissionRequest: true,
+            title: 'Request permission',
+            successLabel: 'Granted',
             result: _requestPermissionResult,
-            onPressed: _requestLocationPermissionPressed,
+            onPressed: _requestPermission,
           ),
         ]).toList(),
       ),
@@ -69,42 +70,48 @@ class _TabSettingsState extends State<TabSettings> {
 }
 
 class _Item extends StatelessWidget {
-  _Item({@required this.isPermissionRequest, this.result, this.onPressed});
+  _Item({
+    @required this.title,
+    @required this.successLabel,
+    @required this.result,
+    @required this.onPressed,
+  });
 
-  final bool isPermissionRequest;
+  final String title;
+  final String successLabel;
   final GeolocationResult result;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    String text;
+    String value;
     String status;
     Color color;
 
     if (result != null) {
       if (result.isSuccessful) {
-        text = isPermissionRequest
-            ? 'Location permission granted'
-            : 'Location is operational';
-
+        value = successLabel;
         status = 'success';
         color = Colors.green;
       } else {
         switch (result.error.type) {
           case GeolocationResultErrorType.runtime:
-            text = 'Failure: ${result.error.message}';
+            value = 'Failure: ${result.error.message}';
             break;
           case GeolocationResultErrorType.locationNotFound:
-            text = 'Location not found';
+            value = 'Location not found';
             break;
           case GeolocationResultErrorType.serviceDisabled:
-            text = 'Service disabled';
+            value = 'Service disabled';
+            break;
+          case GeolocationResultErrorType.permissionNotGranted:
+            value = 'Permission not granted';
             break;
           case GeolocationResultErrorType.permissionDenied:
-            text = 'Permission denied';
+            value = 'Permission denied';
             break;
           case GeolocationResultErrorType.playServicesUnavailable:
-            text = 'Play services unavailable: ${result.error.additionalInfo}';
+            value = 'Play services unavailable: ${result.error.additionalInfo}';
             break;
         }
 
@@ -112,27 +119,26 @@ class _Item extends StatelessWidget {
         color = Colors.red;
       }
     } else {
-      text = 'Is ${isPermissionRequest
-          ? 'permission granted'
-          : 'location operational'}?';
-
+      value = 'Unknown';
       status = 'undefined';
       color = Colors.blueGrey;
     }
 
+    final text = '$title: $value';
+
     final List<Widget> content = <Widget>[
-      new Text(
+      Text(
         text,
-        style: const TextStyle(fontSize: 15.0, fontWeight: FontWeight.w500),
-        maxLines: 1,
+        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+        maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
-      new SizedBox(
-        height: 3.0,
+      const SizedBox(
+        height: 3,
       ),
-      new Text(
-        'Tap to request',
-        style: const TextStyle(fontSize: 12.0, color: Colors.grey),
+      Text(
+        'Tap to trigger',
+        style: const TextStyle(fontSize: 12, color: Colors.grey),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -143,7 +149,7 @@ class _Item extends StatelessWidget {
       child: new Container(
         color: Colors.white,
         child: new SizedBox(
-          height: 56.0,
+          height: 80,
           child: new Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: new Row(

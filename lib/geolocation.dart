@@ -73,10 +73,14 @@ class Geolocation {
   ///
   ///  * [LocationPermission], which describes what are the available permissions
   ///  * [GeolocationResult], the result you can expect from this request.
-  static Future<GeolocationResult> requestLocationPermission([
+  static Future<GeolocationResult> requestLocationPermission({
     LocationPermission permission = const LocationPermission(),
-  ]) =>
-      _locationChannel.requestLocationPermission(permission);
+    bool openSettingsIfDenied = true,
+  }) =>
+      _locationChannel.requestLocationPermission(_PermissionRequest(
+        permission,
+        openSettingsIfDenied: openSettingsIfDenied,
+      ));
 
   /// Retrieves the most recent [Location] currently available.
   /// Automatically request location [permission] beforehand if not granted.
@@ -124,7 +128,7 @@ class Geolocation {
         LocationOptionsAndroid.defaultSingle,
     LocationOptionsIOS iosOptions = const LocationOptionsIOS(),
   }) =>
-      _locationChannel.locationUpdates(new _LocationUpdatesRequest(
+      _locationChannel.locationUpdates(_LocationUpdatesRequest(
         _LocationUpdateStrategy.single,
         permission,
         accuracy,
@@ -163,7 +167,7 @@ class Geolocation {
         LocationOptionsAndroid.defaultSingle,
     LocationOptionsIOS iosOptions = const LocationOptionsIOS(),
   }) =>
-      _locationChannel.locationUpdates(new _LocationUpdatesRequest(
+      _locationChannel.locationUpdates(_LocationUpdatesRequest(
         _LocationUpdateStrategy.current,
         permission,
         accuracy,
@@ -199,7 +203,7 @@ class Geolocation {
         LocationOptionsAndroid.defaultContinuous,
     LocationOptionsIOS iosOptions = const LocationOptionsIOS(),
   }) =>
-      _locationChannel.locationUpdates(new _LocationUpdatesRequest(
+      _locationChannel.locationUpdates(_LocationUpdatesRequest(
         _LocationUpdateStrategy.continuous,
         permission,
         accuracy,
