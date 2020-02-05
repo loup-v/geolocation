@@ -53,6 +53,8 @@ class GeolocationResultError {
     switch (type) {
       case GeolocationResultErrorType.locationNotFound:
         return 'location not found';
+      case GeolocationResultErrorType.permissionNotGranted:
+        return 'permission not granted';
       case GeolocationResultErrorType.permissionDenied:
         return 'permission denied';
       case GeolocationResultErrorType.serviceDisabled:
@@ -69,6 +71,7 @@ class GeolocationResultError {
 enum GeolocationResultErrorType {
   runtime,
   locationNotFound,
+  permissionNotGranted,
   permissionDenied,
   serviceDisabled,
   playServicesUnavailable,
@@ -80,6 +83,8 @@ GeolocationResultErrorType _mapResultErrorTypeJson(String jsonValue) {
       return GeolocationResultErrorType.runtime;
     case 'locationNotFound':
       return GeolocationResultErrorType.locationNotFound;
+    case 'permissionNotGranted':
+      return GeolocationResultErrorType.permissionNotGranted;
     case 'permissionDenied':
       return GeolocationResultErrorType.permissionDenied;
     case 'serviceDisabled':

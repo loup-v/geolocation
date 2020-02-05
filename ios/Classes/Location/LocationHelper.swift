@@ -19,6 +19,6 @@ struct LocationHelper {
   ]
   
   static func betterAccuracy(between a1: CLLocationAccuracy, and a2: CLLocationAccuracy) -> CLLocationAccuracy {
-    return accuracies.index(of: a1)! > accuracies.index(of: a2)! ? a1 : a2
+    return accuracies.firstIndex(of: a1)! > accuracies.firstIndex(of: a2)! ? a1 : a2
   }
 }

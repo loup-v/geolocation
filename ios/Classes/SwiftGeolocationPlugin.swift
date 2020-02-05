@@ -1,8 +1,3 @@
-//
-//  Copyright (c) 2018 Loup Inc.
-//  Licensed under Apache License v2.0
-//
-
 import Flutter
 import UIKit
 import CoreLocation
@@ -10,25 +5,28 @@ import CoreLocation
 @available(iOS 9.0, *)
 public class SwiftGeolocationPlugin: NSObject, FlutterPlugin, UIApplicationDelegate {
   
-  internal let registrar: FlutterPluginRegistrar
   private let locationClient = LocationClient()
-  private let locationChannels: LocationChannels
+  private let handler: Handler
   
-  init(registrar: FlutterPluginRegistrar) {
-    self.registrar = registrar
-    self.locationChannels = LocationChannels(locationClient: locationClient)
+  override init() {
+    self.handler = Handler(locationClient: locationClient)
     super.init()
-    
-    registrar.addApplicationDelegate(self)
-    locationChannels.register(on: self)
   }
   
   public static func register(with registrar: FlutterPluginRegistrar) {
-    _ = SwiftGeolocationPlugin(registrar: registrar)
+    let methodChannel = FlutterMethodChannel(name: "geolocation/location", binaryMessenger: registrar.messenger())
+    let eventChannel = FlutterEventChannel(name: "geolocation/locationUpdates", binaryMessenger: registrar.messenger())
+    
+    let instance = SwiftGeolocationPlugin()
+    
+    registrar.addApplicationDelegate(instance)
+    registrar.addMethodCallDelegate(instance, channel: methodChannel)
+    eventChannel.setStreamHandler(instance.handler.locationUpdatesHandler)
   }
-  
-  
-  // UIApplicationDelegate
+
+  public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    handler.handleMethodCall(call, result: result)
+  }
   
   public func applicationDidBecomeActive(_ application: UIApplication) {
     locationClient.resume()
@@ -38,4 +36,3 @@ public class SwiftGeolocationPlugin: NSObject, FlutterPlugin, UIApplicationDeleg
     locationClient.pause()
   }
 }
-

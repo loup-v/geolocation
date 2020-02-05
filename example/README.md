@@ -1,6 +1,6 @@
-# example
+# geolocation_example
 
-A new Flutter project.
+Demonstrates how to use the geolocation plugin.
 
 ## Getting Started
 

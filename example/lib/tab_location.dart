@@ -216,8 +216,7 @@ class _Item extends StatelessWidget {
       String text;
       if (data.result.isSuccessful) {
         text =
-            'Lat: ${data.result.location.latitude} - Lng: ${data.result.location
-            .longitude}';
+            'Lat: ${data.result.location.latitude} - Lng: ${data.result.location.longitude}';
       } else {
         switch (data.result.error.type) {
           case GeolocationResultErrorType.runtime:
@@ -228,6 +227,9 @@ class _Item extends StatelessWidget {
             break;
           case GeolocationResultErrorType.serviceDisabled:
             text = 'Service disabled';
+            break;
+          case GeolocationResultErrorType.permissionNotGranted:
+            text = 'Permission not granted';
             break;
           case GeolocationResultErrorType.permissionDenied:
             text = 'Permission denied';
@@ -250,8 +252,7 @@ class _Item extends StatelessWidget {
           height: 3.0,
         ),
         new Text(
-          'Elapsed time: ${data.elapsedTimeSeconds == 0 ? '< 1' : data
-              .elapsedTimeSeconds}s',
+          'Elapsed time: ${data.elapsedTimeSeconds == 0 ? '< 1' : data.elapsedTimeSeconds}s',
           style: const TextStyle(fontSize: 12.0, color: Colors.grey),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

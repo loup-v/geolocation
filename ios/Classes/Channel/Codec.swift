@@ -24,4 +24,8 @@ struct Codec {
   static func decodeLocationUpdatesRequest(from arguments: Any?) -> LocationUpdatesRequest {
     return try! jsonDecoder.decode(LocationUpdatesRequest.self, from: (arguments as! String).data(using: .utf8)!)
   }
+  
+  static func decodePermissionRequest(from arguments: Any?) -> PermissionRequest {
+    return try! jsonDecoder.decode(PermissionRequest.self, from: (arguments as! String).data(using: .utf8)!)
+  }
 }

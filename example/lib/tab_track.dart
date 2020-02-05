@@ -41,13 +41,11 @@ class _TabTrackState extends State<TabTrack> {
       });
 
       _subscriptionStartedTimestamp = new DateTime.now().millisecondsSinceEpoch;
-      _subscription = Geolocation
-          .locationUpdates(
+      _subscription = Geolocation.locationUpdates(
         accuracy: LocationAccuracy.best,
         displacementFilter: 0.0,
         inBackground: false,
-      )
-          .listen((result) {
+      ).listen((result) {
         final location = new _LocationData(
           result: result,
           elapsedTimeSeconds: (new DateTime.now().millisecondsSinceEpoch -
@@ -159,8 +157,7 @@ class _Item extends StatelessWidget {
 
     if (data.result.isSuccessful) {
       text =
-          'Lat: ${data.result.location.latitude} - Lng: ${data.result.location
-          .longitude}';
+          'Lat: ${data.result.location.latitude} - Lng: ${data.result.location.longitude}';
       status = 'success';
       color = Colors.green;
     } else {
@@ -173,6 +170,9 @@ class _Item extends StatelessWidget {
           break;
         case GeolocationResultErrorType.serviceDisabled:
           text = 'Service disabled';
+          break;
+        case GeolocationResultErrorType.permissionNotGranted:
+          text = 'Permission not granted';
           break;
         case GeolocationResultErrorType.permissionDenied:
           text = 'Permission denied';
@@ -198,8 +198,7 @@ class _Item extends StatelessWidget {
         height: 3.0,
       ),
       new Text(
-        'Elapsed time: ${data.elapsedTimeSeconds == 0 ? '< 1' : data
-            .elapsedTimeSeconds}s',
+        'Elapsed time: ${data.elapsedTimeSeconds == 0 ? '< 1' : data.elapsedTimeSeconds}s',
         style: const TextStyle(fontSize: 12.0, color: Colors.grey),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,

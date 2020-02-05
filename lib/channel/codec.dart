@@ -11,7 +11,7 @@ class _Codec {
       _JsonCodec.locationResultFromJson(json.decode(data));
 
   static String encodeLocationPermission(LocationPermission permission) =>
-      platformSpecific(
+      _Codec.platformSpecific(
         android: _Codec.encodeEnum(permission.android),
         ios: _Codec.encodeEnum(permission.ios),
       );
@@ -19,11 +19,14 @@ class _Codec {
   static String encodeLocationUpdatesRequest(_LocationUpdatesRequest request) =>
       json.encode(_JsonCodec.locationUpdatesRequestToJson(request));
 
+  static String encodePermissionRequest(_PermissionRequest request) =>
+      json.encode(_JsonCodec.permissionRequestToJson(request));
+
   // see: https://stackoverflow.com/questions/49611724/dart-how-to-json-decode-0-as-double
   static double parseJsonNumber(dynamic value) {
     return value.runtimeType == int ? (value as int).toDouble() : value;
   }
-  
+
   static bool parseJsonBoolean(dynamic value) {
     return value.toString() == 'true';
   }
@@ -128,5 +131,12 @@ class _JsonCodec {
           android: request.androidOptions,
           ios: request.iosOptions,
         ),
+      };
+
+  static Map<String, dynamic> permissionRequestToJson(
+          _PermissionRequest request) =>
+      {
+        'value': _Codec.encodeLocationPermission(request.value),
+        'openSettingsIfDenied': request.openSettingsIfDenied,
       };
 }

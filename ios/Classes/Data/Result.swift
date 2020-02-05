@@ -27,6 +27,7 @@ struct ResultError: Codable {
   enum Kind: String, Codable {
     case runtime = "runtime"
     case locationNotFound = "locationNotFound"
+    case permissionNotGranted = "permissionNotGranted"
     case permissionDenied = "permissionDenied"
     case serviceDisabled = "serviceDisabled"
   }

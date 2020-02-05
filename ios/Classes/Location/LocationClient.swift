@@ -10,6 +10,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   
   private let locationManager = CLLocationManager()
   private var permissionCallbacks: Array<Callback<Void, Void>> = []
+  private var permissionSettingsCallback: (() -> Void)? = nil
   
   private var locationUpdatesCallback: LocationUpdatesCallback? = nil
   private var locationUpdatesRequests: Array<LocationUpdatesRequest> = []
@@ -36,7 +37,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     return status.isReady ? Result<Bool>.success(with: true) : status.failure!
   }
   
-  func requestLocationPermission(with permission: Permission, _ callback: @escaping (Result<Bool>) -> Void) {
+  func requestLocationPermission(with permission: PermissionRequest, _ callback: @escaping (Result<Bool>) -> Void) {
     runWithValidServiceStatus(with: permission, success: {
       callback(Result<Bool>.success(with: true))
     }, failure: { result in
@@ -67,7 +68,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   }
   
   func removeLocationUpdates(requestId: Int) {
-    guard let index = locationUpdatesRequests.index(where: { $0.id == requestId }) else {
+    guard let index = locationUpdatesRequests.firstIndex(where: { $0.id == requestId }) else {
       return
     }
     
@@ -89,6 +90,11 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   // Lifecycle API
   
   func resume() {
+    if let callback = permissionSettingsCallback {
+      callback()
+      permissionSettingsCallback = nil
+    }
+    
     guard hasLocationRequest && isPaused else {
       return
     }
@@ -145,7 +151,12 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   // Service status
   
   private func runWithValidServiceStatus<T>(with permission: Permission, success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
-    let status: ServiceStatus<T> = currentServiceStatus(with: permission)
+    let permissionRequest = PermissionRequest(value: permission, openSettingsIfDenied: false)
+    runWithValidServiceStatus(with: permissionRequest, success: success, failure: failure)
+  }
+  
+  private func runWithValidServiceStatus<T>(with permission: PermissionRequest, success: @escaping () -> Void, failure: @escaping (Result<T>) -> Void) {
+    let status: ServiceStatus<T> = currentServiceStatus(with: permission.value)
     
     if status.isReady {
       success()
@@ -158,7 +169,23 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
         permissionCallbacks.append(callback)
         locationManager.requestAuthorization(for: permission)
       } else {
-        failure(status.failure!)
+        if #available(iOS 10.0, *),
+          status.failure!.error!.type == .permissionDenied,
+          permission.openSettingsIfDenied,
+          let appSettingURl = URL(string: UIApplication.openSettingsURLString),
+          UIApplication.shared.canOpenURL(appSettingURl) {
+          permissionSettingsCallback = {
+            let refreshedStatus: ServiceStatus<T> = self.currentServiceStatus(with: permission.value)
+            if refreshedStatus.isReady {
+              success()
+            } else {
+              failure(refreshedStatus.failure!)
+            }
+          }
+          UIApplication.shared.openURL(appSettingURl)
+        } else {
+          failure(status.failure!)
+        }
       }
     }
   }
@@ -174,13 +201,15 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
         return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .runtime, message: "Missing location usage description values in Info.plist. See readme for details.", fatal: true))
       }
       
-      return ServiceStatus<T>(isReady: false, needsAuthorization: permission, failure: Result<T>.failure(of: .permissionDenied))
+      return ServiceStatus<T>(isReady: false, needsAuthorization: permission, failure: Result<T>.failure(of: .permissionNotGranted))
     case .denied:
       return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .permissionDenied))
     case .restricted:
       return ServiceStatus<T>(isReady: false, needsAuthorization: nil, failure: Result<T>.failure(of: .serviceDisabled))
     case .authorizedWhenInUse, .authorizedAlways:
       return ServiceStatus<T>(isReady: true, needsAuthorization: nil, failure: nil)
+    @unknown default:
+      fatalError("Unknown CLLocationManager.authorizationStatus(): \(CLLocationManager.authorizationStatus())")
     }
   }
   

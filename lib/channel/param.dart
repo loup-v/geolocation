@@ -27,3 +27,12 @@ class _LocationUpdatesRequest {
 }
 
 enum _LocationUpdateStrategy { current, single, continuous }
+
+class _PermissionRequest {
+  _PermissionRequest(
+    this.value, {
+    @required this.openSettingsIfDenied,
+  });
+  final LocationPermission value;
+  final bool openSettingsIfDenied;
+}
