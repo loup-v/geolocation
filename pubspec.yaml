@@ -16,5 +16,9 @@ dependencies:
 
 flutter:
   plugin:
-    androidPackage: app.loup.geolocation
-    pluginClass: GeolocationPlugin
+    platforms:
+      android:
+        package: app.loup.geolocation
+        pluginClass: GeolocationPlugin
+      ios:
+        pluginClass: GeolocationPlugin
