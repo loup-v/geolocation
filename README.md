@@ -30,8 +30,8 @@ Follow the instructions: https://pub.dev/packages/geolocation#-installing-tab-
 
 ##### Objective-C compatibility
 
-For Flutter projects created with the Objective-C template, you might need to add `sdf` at the top of `ios/Podfile`.
-More details can be found here: https://github.com/flutter/flutter/issues/16049#issuecomment-552060349
+For Flutter projects created with the Objective-C template, you might need to add `use_frameworks!` at the top of `ios/Podfile`.
+More details can be found in the following issue: https://github.com/flutter/flutter/issues/16049#issuecomment-552060349
 
 #### Android
 
