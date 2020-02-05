@@ -1,3 +1,8 @@
+## 1.1.2
+
+- Update `streams_channel` to 0.3.0. Fix related compilation warnings.
+- Update android dependencies and internal json communication
+
 ## [1.1.1]
 
 - Update gradle wrapper to version 5.6.2
