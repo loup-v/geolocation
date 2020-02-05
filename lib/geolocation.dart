@@ -57,17 +57,19 @@ class Geolocation {
   /// Requests the location [permission], if needed.
   ///
   /// If location permission is already granted, it returns successfully.
-  /// If location is not operational, the request will fail without asking the permission.
+  /// If location is not operational (location disabled, google play services unavailable on Android, etc), the request will fail without asking the permission.
   ///
-  /// You don't need to call this method manually.
-  /// Every [Geolocation] method requiring the location permission will request it automatically if needed.
-  /// Automatic permission request always request [LocationPermissionAndroid.fine] and [LocationPermissionIOS.whenInUse].
-  /// If you want another permission request, you have to request it manually.
-  /// Also it's a common practice to request the permission early in the application flow (like during an on boarding flow).
+  /// If the user denied the permission before, requesting it again won't show the dialog again on iOS.
+  /// On Android, it happens when user declines and checks `don't ask again`.
+  /// In this situation, [openSettingsIfDenied] will show the system settings where the user can manually enable location for the app.
   ///
-  /// Request permission must also be declared in `Info.plist` for iOS and `AndroidManifest.xml` for Android.
-  /// If required declaration is missing, location will not work.
-  /// Throws a [GeolocationException] if missing, to help you catch this mistake.
+  /// You don't need to call this method manually before requesting a location.
+  /// Every [Geolocation] location request will also request the permission automatically if needed.
+  ///
+  /// This method is useful to request the permission earlier in the application flow, like during an on boarding.
+  ///
+  /// Requested permission must be declared in `Info.plist` for iOS and `AndroidManifest.xml` for Android.
+  /// Throws a [GeolocationException] if the associated declaration is missing.
   ///
   /// See also:
   ///

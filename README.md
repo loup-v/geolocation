@@ -22,29 +22,13 @@ The plugin is under active development and the following features are planned so
 | :----------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------: |
 | ![](https://github.com/loup-v/geolocation/blob/master/doc/android_screenshot.jpg?raw=true) | ![](https://github.com/loup-v/geolocation/blob/master/doc/ios_screenshot.jpg?raw=true) |
 
-## Installation
+### Installation
 
-Add geolocation to your pubspec.yaml:
+Follow the instructions: https://pub.dev/packages/geolocation#-installing-tab-
 
-```yaml
-dependencies:
-  geolocation: ^1.0.2
-```
+#### Android
 
-## Import
-
-Package is called geolocation, with Geolocation being the base class.
-
-```dart
-import 'package:geolocation/geolocation.dart';
-```
-
-**Note:** There is a known issue for integrating swift written plugin into Flutter project created with Objective-C template.
-See issue [Flutter#16049](https://github.com/flutter/flutter/issues/16049) for help on integration.
-
-### AndroidX Requirement
-
-You may need to updated your '/android/gradle.properties' to include use of AndroidX.
+Geolocation is dependent on AndroidX. Make sure to include the following settings to 'android/gradle.properties':
 
 ```
 android.useAndroidX=true
@@ -99,13 +83,13 @@ Note that `ACCESS_FINE_LOCATION` permission includes `ACCESS_COARSE_LOCATION`.
 ## API
 
 For more complete documentation on all usage, check the API documentation:  
-https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/geolocation-library.html
+https://pub.dartlang.org/documentation/geolocation/latest/geolocation/geolocation-library.html
 
 You can also check the example project that showcase a comprehensive usage of Geolocation plugin.
 
 ### Check if location service is operational
 
-API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/isLocationOperational.html
+API documentation: https://pub.dartlang.org/documentation/geolocation/latest/geolocation/Geolocation/isLocationOperational.html
 
 ```dart
 final GeolocationResult result = await Geolocation.isLocationOperational();
@@ -118,24 +102,27 @@ if(result.isSuccessful) {
 
 ### Request location permission
 
-On Android (api 23+) and iOS, geolocation needs to request permission at runtime.
+On Android (api 23+) and iOS, apps need to request location permission at runtime.
 
 _Note: You are not required to request permission manually.
 Geolocation plugin will request permission automatically if it's needed, when you make a location request._
 
-API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/requestLocationPermission.html
+API documentation: https://pub.dartlang.org/documentation/geolocation/latest/geolocation/Geolocation/requestLocationPermission.html
 
 ```dart
-final GeolocationResult result = await Geolocation.requestLocationPermission(const LocationPermission(
-  android: LocationPermissionAndroid.fine,
-  ios: LocationPermissionIOS.always,
-));
+final GeolocationResult result = await Geolocation.requestLocationPermission(
+  const LocationPermission(
+    android: LocationPermissionAndroid.fine,
+    ios: LocationPermissionIOS.always,
+  ),
+  openSettingsIfDenied: true,
+);
 
 if(result.isSuccessful) {
   // location permission is granted (or was already granted before making the request)
 } else {
   // location permission is not granted
-  // user might have denied, but it's also possible that location service is not enabled, restricted, and user never saw the permission request dialog
+  // user might have denied, but it's also possible that location service is not enabled, restricted, and user never saw the permission request dialog. Check the result.error.type for details.
 }
 ```
 
@@ -144,11 +131,11 @@ if(result.isSuccessful) {
 Geolocation offers three methods:
 
 - Last known location (best on Android):  
-  https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/lastKnownLocation.html
+  https://pub.dartlang.org/documentation/geolocation/latest/geolocation/Geolocation/lastKnownLocation.html
 - Single location update (best on iOS):  
-  https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/singleLocationUpdate.html
+  https://pub.dartlang.org/documentation/geolocation/latest/geolocation/Geolocation/singleLocationUpdate.html
 - Current location (best of both worlds, tries to retrieve last known location on Android, otherwise requests a single location update):  
-  https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/currentLocation.html
+  https://pub.dartlang.org/documentation/geolocation/latest/geolocation/Geolocation/currentLocation.html
 
 ```dart
 // get last known location, which is a future rather than a stream (best for android)
@@ -170,7 +157,7 @@ StreamSubscription<LocationResult> subscription = Geolocation.currentLocation(ac
 
 ### Continuous location updates
 
-API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/Geolocation/locationUpdates.html
+API documentation: https://pub.dartlang.org/documentation/geolocation/latest/geolocation/Geolocation/locationUpdates.html
 
 ```dart
 StreamSubscription<LocationResult> subscription = Geolocation.locationUpdates(
@@ -193,7 +180,7 @@ subscription.cancel();
 
 Location request return either a `LocationResult` future or a stream of `LocationResult`.
 
-API documentation: https://pub.dartlang.org/documentation/geolocation/0.2.1/geolocation/LocationResult-class.html
+API documentation: https://pub.dartlang.org/documentation/geolocation/latest/geolocation/LocationResult-class.html
 
 ```dart
 LocationResult result = await Geolocation.lastKnownLocation();
@@ -214,10 +201,14 @@ if (result.isSuccessful) {
       // location services disabled on device
       // might be that GPS is turned off, or parental control (android)
       break;
+    case GeolocationResultErrorType.permissionNotGranted:
+      // location has not been requested yet
+      // app must request permission in order to access the location
+      break;
     case GeolocationResultErrorType.permissionDenied:
-      // user denied location permission request
-      // rejection is final on iOS, and can be on Android
-      // user will need to manually allow the app from the settings
+      // user denied the location permission for the app
+      // rejection is final on iOS, and can be on Android if user checks `don't ask again`
+      // user will need to manually allow the app from the settings, see requestLocationPermission(openSettingsIfDenied: true)
       break;
     case GeolocationResultErrorType.playServicesUnavailable:
       // android only
