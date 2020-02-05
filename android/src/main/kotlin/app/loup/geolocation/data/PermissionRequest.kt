@@ -3,6 +3,8 @@
 
 package app.loup.geolocation.data
 
+import com.squareup.moshi.JsonClass
 
-class PermissionRequest(val value: Permission,
-                        val openSettingsIfDenied: Boolean)
+@JsonClass(generateAdapter = true)
+data class PermissionRequest(val value: Permission,
+                             val openSettingsIfDenied: Boolean)

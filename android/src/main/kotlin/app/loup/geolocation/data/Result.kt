@@ -4,7 +4,9 @@
 package app.loup.geolocation.data
 
 import com.google.android.gms.common.ConnectionResult
+import com.squareup.moshi.JsonClass
 
+@JsonClass(generateAdapter = true)
 data class Result(val isSuccessful: Boolean,
                   val data: Any? = null,
                   val error: Error? = null
@@ -23,6 +25,7 @@ data class Result(val isSuccessful: Boolean,
     )
   }
 
+  @JsonClass(generateAdapter = true)
   data class Error(val type: String,
                    val playServices: String?,
                    val message: String?,
