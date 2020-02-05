@@ -5,11 +5,13 @@ package app.loup.geolocation.data
 
 import android.location.Location
 import android.os.Build
+import com.squareup.moshi.JsonClass
 
-class LocationData(val latitude: Double,
-                   val longitude: Double,
-                   val altitude: Double,
-                   val isMocked: Boolean
+@JsonClass(generateAdapter = true)
+data class LocationData(val latitude: Double,
+                        val longitude: Double,
+                        val altitude: Double,
+                        val isMocked: Boolean
 ) {
   companion object {
     fun from(location: Location) = LocationData(

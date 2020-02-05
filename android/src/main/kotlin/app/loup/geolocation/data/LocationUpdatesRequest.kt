@@ -4,16 +4,17 @@
 package app.loup.geolocation.data
 
 import com.squareup.moshi.FromJson
+import com.squareup.moshi.JsonClass
 import com.squareup.moshi.ToJson
 
-
-class LocationUpdatesRequest(val id: Int,
-                             val strategy: Strategy,
-                             val permission: Permission,
-                             val accuracy: Priority,
-                             val inBackground: Boolean,
-                             val displacementFilter: Float,
-                             val options: Options) {
+@JsonClass(generateAdapter = true)
+data class LocationUpdatesRequest(val id: Int,
+                                  val strategy: Strategy,
+                                  val permission: Permission,
+                                  val accuracy: Priority,
+                                  val inBackground: Boolean,
+                                  val displacementFilter: Float,
+                                  val options: Options) {
 
 
   enum class Strategy {
@@ -30,10 +31,11 @@ class LocationUpdatesRequest(val id: Int,
     }
   }
 
-  class Options(val interval: Long?,
-                val fastestInterval: Long?,
-                val expirationTime: Long?,
-                val expirationDuration: Long?,
-                val maxWaitTime: Long?,
-                val numUpdates: Int?)
+  @JsonClass(generateAdapter = true)
+  data class Options(val interval: Long?,
+                     val fastestInterval: Long?,
+                     val expirationTime: Long?,
+                     val expirationDuration: Long?,
+                     val maxWaitTime: Long?,
+                     val numUpdates: Int?)
 }
