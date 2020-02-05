@@ -26,13 +26,69 @@ The plugin is under active development and the following features are planned so
 
 Follow the instructions: https://pub.dev/packages/geolocation#-installing-tab-
 
+#### iOS
+
+##### Objective-C compatibility
+
+For Flutter projects created with the Objective-C template, you might need to add `sdf` at the top of `ios/Podfile`.
+More details can be found here: https://github.com/flutter/flutter/issues/16049#issuecomment-552060349
+
 #### Android
+
+##### AndroidX
 
 Geolocation is dependent on AndroidX. Make sure to include the following settings to 'android/gradle.properties':
 
 ```
 android.useAndroidX=true
 android.enableJetifier=true
+```
+
+##### R8/Proguard code obfuscation
+
+If you have enabled code obfuscation with R8 or proguard, you need to add the following rules.
+
+`android/app/build.gradle`:
+
+```groovy
+buildTypes {
+  release {
+    minifyEnabled true
+    proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+  }
+}
+```
+
+`android/app/proguard-rules.pro`:
+
+```
+# Geolocation - start
+
+-keep class app.loup.geolocation.** { *; }
+
+    # Moshi - start
+    # https://github.com/square/moshi/blob/master/moshi/src/main/resources/META-INF/proguard/moshi.pro
+
+    # JSR 305 annotations are for embedding nullability information.
+    -dontwarn javax.annotation.**
+
+    -keepclasseswithmembers class * {
+        @com.squareup.moshi.* <methods>;
+    }
+
+    -keep @com.squareup.moshi.JsonQualifier interface *
+
+    # Enum field names are used by the integrated EnumJsonAdapter.
+    # values() is synthesized by the Kotlin compiler and is used by EnumJsonAdapter indirectly
+    # Annotate enums with @JsonClass(generateAdapter = false) to use them with Moshi.
+    -keepclassmembers @com.squareup.moshi.JsonClass class * extends java.lang.Enum {
+        <fields>;
+        **[] values();
+    }
+
+    # Moshi - end
+
+# Geolocation - end
 ```
 
 ### Permission
