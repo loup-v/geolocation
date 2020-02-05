@@ -1,3 +1,7 @@
+## [1.1.1]
+
+- Update gradle wrapper to version 5.6.2
+
 ## [1.1.0]
 
 - **Breaking change :** `Geolocation.requestLocationPermission` now takes a named parameter for permission
