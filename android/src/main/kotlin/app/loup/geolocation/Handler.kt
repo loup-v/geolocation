@@ -5,6 +5,7 @@ package app.loup.geolocation
 
 import app.loup.geolocation.data.LocationUpdatesRequest
 import app.loup.geolocation.data.Permission
+import app.loup.geolocation.data.PermissionRequest
 import app.loup.geolocation.location.LocationClient
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
@@ -21,7 +22,7 @@ class Handler(private val locationClient: LocationClient) : MethodChannel.Method
     result.success(Codec.encodeResult(locationClient.isLocationOperational(permission)))
   }
 
-  private fun requestLocationPermission(permission: Permission, result: MethodChannel.Result) {
+  private fun requestLocationPermission(permission: PermissionRequest, result: MethodChannel.Result) {
     GlobalScope.launch(Dispatchers.Main) {
       result.success(Codec.encodeResult(locationClient.requestLocationPermission(permission)))
     }
@@ -55,7 +56,7 @@ class Handler(private val locationClient: LocationClient) : MethodChannel.Method
   override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
     when (call.method) {
       "isLocationOperational" -> isLocationOperational(Codec.decodePermission(call.arguments), result)
-      "requestLocationPermission" -> requestLocationPermission(Codec.decodePermission(call.arguments), result)
+      "requestLocationPermission" -> requestLocationPermission(Codec.decodePermissionRequest(call.arguments), result)
       "lastKnownLocation" -> lastKnownLocation(Codec.decodePermission(call.arguments), result)
       "addLocationUpdatesRequest" -> addLocationUpdatesRequest(Codec.decodeLocationUpdatesRequest(call.arguments))
       "removeLocationUpdatesRequest" -> removeLocationUpdatesRequest(Codec.decodeInt(call.arguments))

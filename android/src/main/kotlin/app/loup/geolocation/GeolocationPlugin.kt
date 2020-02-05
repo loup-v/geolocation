@@ -4,29 +4,36 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.os.Bundle
-import androidx.annotation.NonNull;
+import androidx.annotation.NonNull
+import app.loup.geolocation.helper.log
 import app.loup.geolocation.location.LocationClient
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.EventChannel
-import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
-public class GeolocationPlugin(context: Context) : FlutterPlugin, ActivityAware, Application.ActivityLifecycleCallbacks {
+public class GeolocationPlugin : FlutterPlugin, ActivityAware, Application.ActivityLifecycleCallbacks {
 
   companion object {
     @JvmStatic
     fun registerWith(registrar: Registrar) {
-      register(registrar.activeContext(), registrar.messenger())
+      val instance = GeolocationPlugin()
+      register(instance, registrar.activeContext(), registrar.messenger())
+
+      instance.locationClient.activity = registrar.activity()
+
+      registrar.addRequestPermissionsResultListener(instance.locationClient.permissionResultListener)
+      registrar.addActivityResultListener(instance.locationClient.activityResultListener)
+      registrar.activity().application.registerActivityLifecycleCallbacks(instance)
     }
 
-    private fun register(context: Context, binaryMessenger: BinaryMessenger) {
-      val instance = GeolocationPlugin(context)
+    private fun register(instance: GeolocationPlugin, context: Context, binaryMessenger: BinaryMessenger) {
+      instance.locationClient = LocationClient(context)
+      instance.handler = Handler(instance.locationClient)
+
       val methodChannel = MethodChannel(binaryMessenger, "geolocation/location")
       val eventChannel = EventChannel(binaryMessenger, "geolocation/locationUpdates")
 
@@ -35,8 +42,8 @@ public class GeolocationPlugin(context: Context) : FlutterPlugin, ActivityAware,
     }
   }
 
-  private val locationClient = LocationClient(context)
-  private val handler = Handler(locationClient)
+  private lateinit var locationClient: LocationClient
+  private lateinit var handler: Handler
   private var activityBinding: ActivityPluginBinding? = null
 
   private fun attachToActivity(binding: ActivityPluginBinding) {
@@ -68,7 +75,7 @@ public class GeolocationPlugin(context: Context) : FlutterPlugin, ActivityAware,
   // FlutterPlugin
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    register(flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
+    register(this, flutterPluginBinding.applicationContext, flutterPluginBinding.binaryMessenger)
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -86,11 +93,11 @@ public class GeolocationPlugin(context: Context) : FlutterPlugin, ActivityAware,
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    attachToActivity(binding)
+    onAttachedToActivity(binding)
   }
 
   override fun onDetachedFromActivityForConfigChanges() {
-    detachFromActivity()
+    onDetachedFromActivity()
   }
 
 
@@ -127,6 +134,7 @@ public class GeolocationPlugin(context: Context) : FlutterPlugin, ActivityAware,
 
   object Intents {
     const val LocationPermissionRequestId = 12234
+    const val LocationPermissionSettingsRequestId = 12230
     const val EnableLocationSettingsRequestId = 12237
   }
 }

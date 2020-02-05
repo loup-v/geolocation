@@ -6,14 +6,14 @@ package app.loup.geolocation.location
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.net.Uri
+import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import app.loup.geolocation.GeolocationPlugin
-import app.loup.geolocation.data.LocationData
-import app.loup.geolocation.data.LocationUpdatesRequest
-import app.loup.geolocation.data.Permission
-import app.loup.geolocation.data.Result
+import app.loup.geolocation.data.*
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.ApiException
@@ -48,22 +48,31 @@ class LocationClient(private val context: Context) {
   }
 
   val activityResultListener: PluginRegistry.ActivityResultListener = PluginRegistry.ActivityResultListener { id, resultCode, _ ->
-    if (id == GeolocationPlugin.Intents.EnableLocationSettingsRequestId) {
-      if (resultCode == Activity.RESULT_OK) {
-        locationSettingsCallbacks.forEach { it.success(Unit) }
-      } else {
-        locationSettingsCallbacks.forEach { it.failure(Unit) }
+    when (id) {
+      GeolocationPlugin.Intents.LocationPermissionSettingsRequestId -> {
+        permissionSettingsCallback?.invoke()
+        permissionSettingsCallback = null
+        return@ActivityResultListener true
       }
-      locationSettingsCallbacks.clear()
 
-      return@ActivityResultListener true
+      GeolocationPlugin.Intents.EnableLocationSettingsRequestId -> {
+        if (resultCode == Activity.RESULT_OK) {
+          locationSettingsCallbacks.forEach { it.success(Unit) }
+        } else {
+          locationSettingsCallbacks.forEach { it.failure(Unit) }
+        }
+        locationSettingsCallbacks.clear()
+
+        return@ActivityResultListener true
+      }
     }
+
     return@ActivityResultListener false
   }
 
-
   private val providerClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
   private val permissionCallbacks = ArrayList<Callback<Unit, Unit>>()
+  private var permissionSettingsCallback: (() -> Unit)? = null
   private val locationSettingsCallbacks = ArrayList<Callback<Unit, Unit>>()
 
   private var locationUpdatesCallback: ((Result) -> Unit)? = null
@@ -100,7 +109,7 @@ class LocationClient(private val context: Context) {
     }
   }
 
-  suspend fun requestLocationPermission(permission: Permission): Result {
+  suspend fun requestLocationPermission(permission: PermissionRequest): Result {
     val validity = validateServiceStatus(permission)
     return if (validity.isValid) {
       Result.success(true)
@@ -309,19 +318,31 @@ class LocationClient(private val context: Context) {
   // Service status
 
   private suspend fun validateServiceStatus(permission: Permission): ValidateServiceStatus {
-    val status = currentServiceStatus(permission)
+    return validateServiceStatus(PermissionRequest(permission, openSettingsIfDenied = false))
+  }
+
+  private suspend fun validateServiceStatus(permission: PermissionRequest): ValidateServiceStatus {
+    val status = currentServiceStatus(permission.value)
     if (status.isReady) return ValidateServiceStatus(true)
 
     return if (status.needsAuthorization) {
-      if (requestPermission(permission)) {
+      if (requestPermission(permission.value)) {
         ValidateServiceStatus(true)
       } else {
         ValidateServiceStatus(false, Result.failure(Result.Error.Type.PermissionDenied))
+      }
+    } else if (status.failure!!.error!!.type == Result.Error.Type.PermissionDenied && permission.openSettingsIfDenied && tryShowSettings()) {
+      val refreshedStatus = currentServiceStatus(permission.value)
+      return if (refreshedStatus.isReady) {
+        ValidateServiceStatus(true)
+      } else {
+        ValidateServiceStatus(false, refreshedStatus.failure)
       }
     } else {
       ValidateServiceStatus(false, status.failure!!)
     }
   }
+
 
   private fun currentServiceStatus(permission: Permission): ServiceStatus {
     val connectionResult = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
@@ -339,8 +360,12 @@ class LocationClient(private val context: Context) {
       return ServiceStatus(isReady = false, needsAuthorization = false, failure = Result.failure(Result.Error.Type.Runtime, message = "Missing location permission in AndroidManifest.xml. You need to add one of ACCESS_FINE_LOCATION or ACCESS_COARSE_LOCATION. See readme for details.", fatal = true))
     }
 
-    if (!LocationHelper.hasLocationPermission(context)) {
-      return ServiceStatus(isReady = false, needsAuthorization = true, failure = Result.failure(Result.Error.Type.PermissionDenied))
+    if (activity != null && LocationHelper.isPermissionDeclined(activity!!, permission)) {
+      return ServiceStatus(isReady = false, needsAuthorization = false, failure = Result.failure(Result.Error.Type.PermissionDenied))
+    }
+
+    if (!LocationHelper.isPermissionGranted(context)) {
+      return ServiceStatus(isReady = false, needsAuthorization = true, failure = Result.failure(Result.Error.Type.PermissionNotGranted))
     }
 
     return ServiceStatus(true)
@@ -348,6 +373,20 @@ class LocationClient(private val context: Context) {
 
 
   // Permission
+
+  private suspend fun tryShowSettings(): Boolean = suspendCoroutine { cont ->
+    if (activity == null) {
+      cont.resume(false)
+      return@suspendCoroutine
+    }
+
+    permissionSettingsCallback = {
+      cont.resume(true)
+    }
+
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
+    activity!!.startActivityForResult(intent, GeolocationPlugin.Intents.LocationPermissionSettingsRequestId)
+  }
 
   private suspend fun requestPermission(permission: Permission): Boolean = suspendCoroutine { cont ->
     if (activity == null) {

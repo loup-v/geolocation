@@ -3,11 +3,8 @@
 
 package app.loup.geolocation
 
+import app.loup.geolocation.data.*
 import com.squareup.moshi.Moshi
-import app.loup.geolocation.data.LocationUpdatesRequest
-import app.loup.geolocation.data.Permission
-import app.loup.geolocation.data.Priority
-import app.loup.geolocation.data.Result
 
 object Codec {
 
@@ -28,5 +25,8 @@ object Codec {
 
     fun decodeLocationUpdatesRequest(arguments: Any?): LocationUpdatesRequest =
             moshi.adapter(LocationUpdatesRequest::class.java).fromJson(arguments!! as String)!!
+
+    fun decodePermissionRequest(arguments: Any?): PermissionRequest =
+        moshi.adapter(PermissionRequest::class.java).fromJson(arguments!! as String)!!
 
 }

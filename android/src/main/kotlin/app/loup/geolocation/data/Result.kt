@@ -31,6 +31,7 @@ data class Result(val isSuccessful: Boolean,
     object Type {
       const val Runtime = "runtime"
       const val LocationNotFound = "locationNotFound"
+      const val PermissionNotGranted = "permissionNotGranted"
       const val PermissionDenied = "permissionDenied"
       const val ServiceDisabled = "serviceDisabled"
       const val PlayServicesUnavailable = "playServicesUnavailable"
