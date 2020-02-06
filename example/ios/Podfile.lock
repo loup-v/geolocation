@@ -3,7 +3,7 @@ PODS:
   - geolocation (0.0.1):
     - Flutter
     - streams_channel
-  - streams_channel (0.2.1):
+  - streams_channel (0.0.1):
     - Flutter
 
 DEPENDENCIES:
@@ -22,7 +22,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   geolocation: c194aabfd0f48cd7d6041afa8ba6542aa5714dc2
-  streams_channel: 733858967fb8b62e0d63a1d03f6b8f0cb7d3bfc2
+  streams_channel: 16855ffd0568eded9563b2fec6a1bfa94420b353
 
 PODFILE CHECKSUM: 1b66dae606f75376c5f2135a8290850eeb09ae83
 
