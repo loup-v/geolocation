@@ -27,6 +27,7 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
   override init() {
     super.init()
     locationManager.delegate = self
+    locationManager.allowsBackgroundLocationUpdates = true
   }
   
   
@@ -129,6 +130,11 @@ class LocationClient : NSObject, CLLocationManagerDelegate {
     
     let distanceFilter = locationUpdatesRequests.map { $0.displacementFilter }.min()!
     locationManager.distanceFilter = distanceFilter > 0 ? distanceFilter : kCLDistanceFilterNone
+    
+    if #available(iOS 11.0, *) {
+      let showBackgroundLocationIndicator = !locationUpdatesRequests.filter { $0.options.showsBackgroundLocationIndicator == true }.isEmpty
+      locationManager.showsBackgroundLocationIndicator = showBackgroundLocationIndicator
+    }
     
     locationManager.stopUpdatingLocation()
     
