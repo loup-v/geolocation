@@ -58,19 +58,20 @@ class _LocationChannel {
 
   Future<GeolocationResult> enableLocationServices() async {
     final response = await (_invokeChannelMethod(
-        _loggingTag, _channel, 'enableLocationServices', '') as FutureOr<String>);
+            _loggingTag, _channel, 'enableLocationServices', '')
+        as FutureOr<String>);
     return _Codec.decodeResult(response);
   }
 
   Future<LocationResult> lastKnownLocation(
       LocationPermission permission) async {
-    final response = await (_invokeChannelMethod(
+    final response = await _invokeChannelMethod(
       _loggingTag,
       _channel,
       'lastKnownLocation',
       _Codec.encodeLocationPermission(permission),
-    ) as FutureOr<String?>);
-    return _Codec.decodeLocationResult(response);
+    );
+    return _Codec.decodeLocationResult(response ?? '');
   }
 
   // Creates a new subscription to the channel stream and notifies
@@ -100,7 +101,9 @@ class _LocationChannel {
 
     // Uniquely identify each request, in order to be able to manipulate each request of platform side
     request.id = (_updatesSubscriptions.isNotEmpty
-            ? _updatesSubscriptions.map<int>((it) => it.requestId ?? -1).reduce(math.max)
+            ? _updatesSubscriptions
+                .map<int>((it) => it.requestId ?? -1)
+                .reduce(math.max)
             : 0) +
         1;
 
