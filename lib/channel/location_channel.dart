@@ -69,7 +69,7 @@ class _LocationChannel {
       _channel,
       'lastKnownLocation',
       _Codec.encodeLocationPermission(permission),
-    ) as FutureOr<String>);
+    ) as FutureOr<String?>);
     return _Codec.decodeLocationResult(response);
   }
 
