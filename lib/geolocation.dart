@@ -123,7 +123,7 @@ class Geolocation {
   ///  * Android behaviour: <https://developer.android.com/training/location/receive-location-updates.html>
   ///  * iOS behaviour: <https://developer.apple.com/documentation/corelocation/cllocationmanager/1620548-requestlocation>
   static Stream<LocationResult> singleLocationUpdate({
-    @required LocationAccuracy accuracy,
+    required LocationAccuracy accuracy,
     bool inBackground = false,
     LocationPermission permission = const LocationPermission(),
     LocationOptionsAndroid androidOptions =
@@ -162,7 +162,7 @@ class Geolocation {
   ///  * [singleLocationUpdate], for more explanation on how single location update work.
   ///  * [LocationResult], the result you can expect from this request.
   static Stream<LocationResult> currentLocation({
-    @required LocationAccuracy accuracy,
+    required LocationAccuracy accuracy,
     bool inBackground = false,
     LocationPermission permission = const LocationPermission(),
     LocationOptionsAndroid androidOptions =
@@ -197,7 +197,7 @@ class Geolocation {
   ///  * Android behaviour: <https://developer.android.com/training/location/receive-location-updates.html>
   ///  * iOS behaviour: <https://developer.apple.com/documentation/corelocation/cllocationmanager/1423750-startupdatinglocation>
   static Stream<LocationResult> locationUpdates({
-    @required LocationAccuracy accuracy,
+    required LocationAccuracy accuracy,
     double displacementFilter = 0.0,
     bool inBackground = false,
     LocationPermission permission = const LocationPermission(),
@@ -224,7 +224,7 @@ class Geolocation {
 class GeolocationException implements Exception {
   GeolocationException(this.message);
 
-  final String message;
+  final String? message;
 
   @override
   String toString() {
@@ -232,7 +232,7 @@ class GeolocationException implements Exception {
   }
 }
 
-_log(String message, {String tag}) {
+_log(String? message, {String? tag}) {
   if (Geolocation.loggingEnabled) {
     debugPrint(tag != null ? '$tag: $message' : message);
   }

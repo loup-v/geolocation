@@ -3,11 +3,11 @@
 
 part of geolocation;
 
-Future<String> _invokeChannelMethod(
+Future<String?> _invokeChannelMethod(
     String tag, MethodChannel channel, String method,
     [dynamic arguments]) async {
   _log('invoke ${channel.name}->$method [$arguments]', tag: tag);
-  String data;
+  String? data;
   try {
     data = await channel.invokeMethod(method, arguments);
   } catch (exception, stack) {

@@ -17,11 +17,11 @@ class GeolocationResult {
     this.error,
   ) {
     assert(isSuccessful != null);
-    assert(isSuccessful || error != null);
+    assert(isSuccessful! || error != null);
   }
 
-  final bool isSuccessful;
-  final GeolocationResultError error;
+  final bool? isSuccessful;
+  final GeolocationResultError? error;
 
   String dataToString() {
     return "without additional data";
@@ -29,7 +29,7 @@ class GeolocationResult {
 
   @override
   String toString() {
-    if (isSuccessful) {
+    if (isSuccessful!) {
       return '{success: ${dataToString()} }';
     } else {
       return '{failure: $error }';
@@ -44,8 +44,8 @@ class GeolocationResultError {
     this.additionalInfo,
   );
 
-  final GeolocationResultErrorType type;
-  final String message;
+  final GeolocationResultErrorType? type;
+  final String? message;
   final dynamic additionalInfo;
 
   @override
@@ -63,7 +63,7 @@ class GeolocationResultError {
         return 'play services -> $additionalInfo';
       default:
         assert(false);
-        return null;
+        return '';
     }
   }
 }
@@ -77,7 +77,7 @@ enum GeolocationResultErrorType {
   playServicesUnavailable,
 }
 
-GeolocationResultErrorType _mapResultErrorTypeJson(String jsonValue) {
+GeolocationResultErrorType? _mapResultErrorTypeJson(String? jsonValue) {
   switch (jsonValue) {
     case 'runtime':
       return GeolocationResultErrorType.runtime;

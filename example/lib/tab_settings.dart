@@ -13,8 +13,8 @@ class TabSettings extends StatefulWidget {
 }
 
 class _TabSettingsState extends State<TabSettings> {
-  GeolocationResult _locationOperationalResult;
-  GeolocationResult _requestPermissionResult;
+  GeolocationResult? _locationOperationalResult;
+  GeolocationResult? _requestPermissionResult;
 
   _checkLocationOperational() async {
     final GeolocationResult result = await Geolocation.isLocationOperational();
@@ -71,32 +71,32 @@ class _TabSettingsState extends State<TabSettings> {
 
 class _Item extends StatelessWidget {
   _Item({
-    @required this.title,
-    @required this.successLabel,
-    @required this.result,
-    @required this.onPressed,
+    required this.title,
+    required this.successLabel,
+    required this.result,
+    required this.onPressed,
   });
 
   final String title;
   final String successLabel;
-  final GeolocationResult result;
+  final GeolocationResult? result;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    String value;
+    String? value;
     String status;
     Color color;
 
     if (result != null) {
-      if (result.isSuccessful) {
+      if (result!.isSuccessful!) {
         value = successLabel;
         status = 'success';
         color = Colors.green;
       } else {
-        switch (result.error.type) {
+        switch (result!.error!.type) {
           case GeolocationResultErrorType.runtime:
-            value = 'Failure: ${result.error.message}';
+            value = 'Failure: ${result!.error!.message}';
             break;
           case GeolocationResultErrorType.locationNotFound:
             value = 'Location not found';
@@ -111,7 +111,7 @@ class _Item extends StatelessWidget {
             value = 'Permission denied';
             break;
           case GeolocationResultErrorType.playServicesUnavailable:
-            value = 'Play services unavailable: ${result.error.additionalInfo}';
+            value = 'Play services unavailable: ${result!.error!.additionalInfo}';
             break;
         }
 
