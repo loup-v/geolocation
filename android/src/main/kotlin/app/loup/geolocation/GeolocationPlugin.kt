@@ -119,7 +119,7 @@ public class GeolocationPlugin : FlutterPlugin, ActivityAware, Application.Activ
 
   }
 
-  override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle?) {
+  override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
 
   }
 
