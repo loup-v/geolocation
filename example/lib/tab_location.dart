@@ -128,9 +128,9 @@ class _TabLocationState extends State<TabLocation> {
 
 class _Header extends StatelessWidget {
   _Header(
-      {@required this.onLastKnownPressed,
-      @required this.onCurrentPressed,
-      @required this.onSingleUpdatePressed});
+      {required this.onLastKnownPressed,
+      required this.onCurrentPressed,
+      required this.onSingleUpdatePressed});
 
   final VoidCallback onLastKnownPressed;
   final VoidCallback onCurrentPressed;
@@ -173,7 +173,7 @@ class _Header extends StatelessWidget {
 
 class _HeaderButton extends StatelessWidget {
   _HeaderButton(
-      {@required this.title, @required this.color, @required this.onTap});
+      {required this.title, required this.color, required this.onTap});
 
   final String title;
   final Color color;
@@ -204,7 +204,7 @@ class _HeaderButton extends StatelessWidget {
 }
 
 class _Item extends StatelessWidget {
-  _Item({@required this.data});
+  _Item({required this.data});
 
   final LocationData data;
 
@@ -213,14 +213,14 @@ class _Item extends StatelessWidget {
     final List<Widget> content = <Widget>[];
 
     if (data.result != null) {
-      String text;
-      if (data.result.isSuccessful) {
+      late String text;
+      if (data.result!.isSuccessful!) {
         text =
-            'Lat: ${data.result.location.latitude} - Lng: ${data.result.location.longitude}';
+            'Lat: ${data.result!.location.latitude} - Lng: ${data.result!.location.longitude}';
       } else {
-        switch (data.result.error.type) {
+        switch (data.result!.error!.type) {
           case GeolocationResultErrorType.runtime:
-            text = 'Failure: ${data.result.error.message}';
+            text = 'Failure: ${data.result!.error!.message}';
             break;
           case GeolocationResultErrorType.locationNotFound:
             text = 'Location not found';
@@ -236,7 +236,7 @@ class _Item extends StatelessWidget {
             break;
           case GeolocationResultErrorType.playServicesUnavailable:
             text =
-                'Play services unavailable: ${data.result.error.additionalInfo}';
+                'Play services unavailable: ${data.result!.error!.additionalInfo}';
             break;
         }
       }
@@ -310,18 +310,18 @@ class _Item extends StatelessWidget {
 
 class LocationData {
   LocationData({
-    @required this.id,
+    required this.id,
     this.result,
-    @required this.origin,
-    @required this.color,
-    @required this.createdAtTimestamp,
+    required this.origin,
+    required this.color,
+    required this.createdAtTimestamp,
     this.elapsedTimeSeconds,
   });
 
   final int id;
-  final LocationResult result;
+  final LocationResult? result;
   final String origin;
   final Color color;
   final int createdAtTimestamp;
-  final int elapsedTimeSeconds;
+  final int? elapsedTimeSeconds;
 }

@@ -23,7 +23,7 @@ class _Codec {
       json.encode(_JsonCodec.permissionRequestToJson(request));
 
   // see: https://stackoverflow.com/questions/49611724/dart-how-to-json-decode-0-as-double
-  static double parseJsonNumber(dynamic value) {
+  static double? parseJsonNumber(dynamic value) {
     return value.runtimeType == int ? (value as int).toDouble() : value;
   }
 
@@ -36,8 +36,8 @@ class _Codec {
   }
 
   static dynamic platformSpecific({
-    @required dynamic android,
-    @required dynamic ios,
+    required dynamic android,
+    required dynamic ios,
   }) {
     if (Platform.isAndroid) {
       return android;
@@ -50,8 +50,8 @@ class _Codec {
   }
 
   static Map<String, dynamic> platformSpecificMap({
-    @required Map<String, dynamic> android,
-    @required Map<String, dynamic> ios,
+    required Map<String, dynamic> android,
+    required Map<String, dynamic> ios,
   }) {
     if (Platform.isAndroid) {
       return android;
@@ -72,7 +72,7 @@ class _JsonCodec {
       );
 
   static GeolocationResultError resultErrorFromJson(Map<String, dynamic> json) {
-    final GeolocationResultErrorType type =
+    final GeolocationResultErrorType? type =
         _mapResultErrorTypeJson(json['type']);
 
     var additionalInfo;

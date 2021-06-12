@@ -7,13 +7,13 @@ class Location {
   Location._(this.latitude, this.longitude, this.altitude, this.isMocked);
 
   /// Latitude in degrees
-  final double latitude;
+  final double? latitude;
 
   /// Longitude in degrees
-  final double longitude;
+  final double? longitude;
 
   /// Altitude measured in meters.
-  final double altitude;
+  final double? altitude;
 
   final bool isMocked;
 
@@ -36,7 +36,7 @@ class Location {
 class LocationAccuracy {
   /// In case the common ground constants are not satisfactory, you can build a custom [LocationAccuracy]
   /// using specific platform values.
-  const LocationAccuracy({@required this.android, @required this.ios});
+  const LocationAccuracy({required this.android, required this.ios});
 
   final LocationPriorityAndroid android;
   final LocationAccuracyIOS ios;

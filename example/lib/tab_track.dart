@@ -16,14 +16,14 @@ class TabTrack extends StatefulWidget {
 
 class _TabTrackState extends State<TabTrack> {
   List<_LocationData> _locations = [];
-  StreamSubscription<LocationResult> _subscription;
-  int _subscriptionStartedTimestamp;
+  StreamSubscription<LocationResult>? _subscription;
+  int? _subscriptionStartedTimestamp;
   bool _isTracking = false;
 
   @override
   dispose() {
     super.dispose();
-    _subscription.cancel();
+    _subscription!.cancel();
   }
 
   _onTogglePressed() {
@@ -32,7 +32,7 @@ class _TabTrackState extends State<TabTrack> {
         _isTracking = false;
       });
 
-      _subscription.cancel();
+      _subscription!.cancel();
       _subscription = null;
       _subscriptionStartedTimestamp = null;
     } else {
@@ -49,7 +49,7 @@ class _TabTrackState extends State<TabTrack> {
         final location = new _LocationData(
           result: result,
           elapsedTimeSeconds: (new DateTime.now().millisecondsSinceEpoch -
-                  _subscriptionStartedTimestamp) ~/
+                  _subscriptionStartedTimestamp!) ~/
               1000,
         );
 
@@ -58,7 +58,7 @@ class _TabTrackState extends State<TabTrack> {
         });
       });
 
-      _subscription.onDone(() {
+      _subscription!.onDone(() {
         setState(() {
           _isTracking = false;
         });
@@ -92,10 +92,10 @@ class _TabTrackState extends State<TabTrack> {
 }
 
 class _Header extends StatelessWidget {
-  _Header({@required this.isRunning, this.onTogglePressed});
+  _Header({required this.isRunning, this.onTogglePressed});
 
   final bool isRunning;
-  final VoidCallback onTogglePressed;
+  final VoidCallback? onTogglePressed;
 
   @override
   Widget build(BuildContext context) {
@@ -114,11 +114,11 @@ class _Header extends StatelessWidget {
 
 class _HeaderButton extends StatelessWidget {
   _HeaderButton(
-      {@required this.title, @required this.color, @required this.onTap});
+      {required this.title, required this.color, required this.onTap});
 
   final String title;
   final Color color;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -145,25 +145,25 @@ class _HeaderButton extends StatelessWidget {
 }
 
 class _Item extends StatelessWidget {
-  _Item({@required this.data});
+  _Item({required this.data});
 
   final _LocationData data;
 
   @override
   Widget build(BuildContext context) {
-    String text;
+    late String text;
     String status;
     Color color;
 
-    if (data.result.isSuccessful) {
+    if (data.result.isSuccessful!) {
       text =
           'Lat: ${data.result.location.latitude} - Lng: ${data.result.location.longitude}';
       status = 'success';
       color = Colors.green;
     } else {
-      switch (data.result.error.type) {
+      switch (data.result.error!.type) {
         case GeolocationResultErrorType.runtime:
-          text = 'Failure: ${data.result.error.message}';
+          text = 'Failure: ${data.result.error!.message}';
           break;
         case GeolocationResultErrorType.locationNotFound:
           text = 'Location not found';
@@ -179,7 +179,7 @@ class _Item extends StatelessWidget {
           break;
         case GeolocationResultErrorType.playServicesUnavailable:
           text =
-              'Play services unavailable: ${data.result.error.additionalInfo}';
+              'Play services unavailable: ${data.result.error!.additionalInfo}';
           break;
       }
 
@@ -249,8 +249,8 @@ class _Item extends StatelessWidget {
 
 class _LocationData {
   _LocationData({
-    @required this.result,
-    @required this.elapsedTimeSeconds,
+    required this.result,
+    required this.elapsedTimeSeconds,
   });
 
   final LocationResult result;

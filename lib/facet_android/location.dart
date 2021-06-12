@@ -36,14 +36,14 @@ class LocationOptionsAndroid {
     fastestInterval: 2500,
   );
 
-  final int interval;
-  final int fastestInterval;
-  final int expirationTime;
-  final int expirationDuration;
-  final int maxWaitTime;
+  final int? interval;
+  final int? fastestInterval;
+  final int? expirationTime;
+  final int? expirationDuration;
+  final int? maxWaitTime;
 
   /// Always `1` in single location request
-  final int numUpdates;
+  final int? numUpdates;
 
   Map toJson() => {
         'interval': interval,

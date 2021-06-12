@@ -36,29 +36,30 @@ class _LocationChannel {
 
   Future<GeolocationResult> isLocationOperational(
       LocationPermission permission) async {
-    final response = await _invokeChannelMethod(
+    final response = await (_invokeChannelMethod(
       _loggingTag,
       _channel,
       'isLocationOperational',
       _Codec.encodeLocationPermission(permission),
-    );
+    ) as FutureOr<String>);
     return _Codec.decodeResult(response);
   }
 
   Future<GeolocationResult> requestLocationPermission(
       _PermissionRequest request) async {
-    final response = await _invokeChannelMethod(
+    final response = await (_invokeChannelMethod(
       _loggingTag,
       _channel,
       'requestLocationPermission',
       _Codec.encodePermissionRequest(request),
-    );
+    ) as FutureOr<String>);
     return _Codec.decodeResult(response);
   }
 
   Future<GeolocationResult> enableLocationServices() async {
-    final response = await _invokeChannelMethod(
-        _loggingTag, _channel, 'enableLocationServices', '');
+    final response = await (_invokeChannelMethod(
+            _loggingTag, _channel, 'enableLocationServices', '')
+        as FutureOr<String>);
     return _Codec.decodeResult(response);
   }
 
@@ -70,7 +71,7 @@ class _LocationChannel {
       'lastKnownLocation',
       _Codec.encodeLocationPermission(permission),
     );
-    return _Codec.decodeLocationResult(response);
+    return _Codec.decodeLocationResult(response ?? '');
   }
 
   // Creates a new subscription to the channel stream and notifies
@@ -78,8 +79,8 @@ class _LocationChannel {
   // can start the location request if it's the first subscription or update ongoing request with new params if needed
   Stream<LocationResult> locationUpdates(_LocationUpdatesRequest request) {
     // The stream that will be returned for the current updates request
-    StreamController<LocationResult> controller;
-    _LocationUpdatesSubscription subscription;
+    late StreamController<LocationResult> controller;
+    _LocationUpdatesSubscription? subscription;
 
     final StreamSubscription<LocationResult> updatesSubscription =
         _updatesStream.listen((LocationResult result) {
@@ -88,7 +89,7 @@ class _LocationChannel {
 
       // [_LocationUpdateStrategy.current] and [_LocationUpdateStrategy.single] only get a single result, then closes
       if (request.strategy != _LocationUpdateStrategy.continuous) {
-        subscription.subscription.cancel();
+        subscription!.subscription.cancel();
         _updatesSubscriptions.remove(subscription);
         controller.close();
       }
@@ -100,7 +101,9 @@ class _LocationChannel {
 
     // Uniquely identify each request, in order to be able to manipulate each request of platform side
     request.id = (_updatesSubscriptions.isNotEmpty
-            ? _updatesSubscriptions.map((it) => it.requestId).reduce(math.max)
+            ? _updatesSubscriptions
+                .map<int>((it) => it.requestId ?? -1)
+                .reduce(math.max)
             : 0) +
         1;
 
@@ -112,7 +115,7 @@ class _LocationChannel {
 
     controller = new StreamController<LocationResult>.broadcast(
       onListen: () {
-        _log('add location updates [id=${subscription.requestId}]');
+        _log('add location updates [id=${subscription!.requestId}]');
         _invokeChannelMethod(
           _loggingTag,
           _channel,
@@ -121,7 +124,7 @@ class _LocationChannel {
         );
       },
       onCancel: () {
-        _log('remove location updates [id=${subscription.requestId}]');
+        _log('remove location updates [id=${subscription!.requestId}]');
         subscription.subscription.cancel();
         _updatesSubscriptions.remove(subscription);
 
@@ -141,6 +144,6 @@ class _LocationChannel {
 class _LocationUpdatesSubscription {
   _LocationUpdatesSubscription(this.requestId, this.subscription);
 
-  final int requestId;
+  final int? requestId;
   final StreamSubscription<LocationResult> subscription;
 }

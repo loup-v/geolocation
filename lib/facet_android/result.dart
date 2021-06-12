@@ -11,7 +11,7 @@ enum GeolocationAndroidPlayServices {
   invalid,
 }
 
-GeolocationAndroidPlayServices _mapPlayServicesJson(String jsonValue) {
+GeolocationAndroidPlayServices? _mapPlayServicesJson(String? jsonValue) {
   switch (jsonValue) {
     case 'missing':
       return GeolocationAndroidPlayServices.missing;
