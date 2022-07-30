@@ -13,6 +13,7 @@ struct LocationUpdatesRequest: Codable {
   let accuracy: Accuracy
   let displacementFilter: Double
   let inBackground: Bool
+  let options: LocationOptionsIOS
   
   enum Strategy: String, Codable {
     case current = "current"
